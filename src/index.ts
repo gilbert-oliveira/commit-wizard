@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import chalk from 'chalk'
 import { execSync } from 'child_process'
 import fs from 'fs'
@@ -21,7 +19,7 @@ function isCodyInstalled(): boolean {
 function installCody(): void {
   console.log(chalk.blue('🚀 Instalando o cody automaticamente...'))
   try {
-    execSync('bun i -g @sourcegraph/cody', { stdio: 'inherit' }) // Instalando globalmente com npm
+    execSync('npm i -g @sourcegraph/cody', { stdio: 'inherit' }) // Instalando globalmente com npm
     console.log(chalk.green('✅ Cody instalado com sucesso!'))
   } catch (error) {
     console.error(chalk.red('❌ Erro ao instalar o Cody:'), (error as Error).message)
