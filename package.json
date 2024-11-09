@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "commit-wizard": "./index.ts"
+    "commit-wizard": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
