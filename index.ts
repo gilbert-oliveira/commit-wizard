@@ -34,6 +34,27 @@ if (!isCodyInstalled()) {
   installCody()
 }
 
+// Função para verificar se esta logado no cody
+function isCodyLoggedIn(): boolean {
+  try {
+    execSync('cody auth whoami', { stdio: 'ignore' }) // Tentando rodar o comando `cody auth whoami`
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+// Verificar se o usuário está logado no Cody se nao estiver roda o comando para logar
+if (!isCodyLoggedIn()) {
+  console.log(chalk.blue('🔑 Realize o login no Cody...'))
+  try {
+    execSync('cody auth login --web', { stdio: 'inherit' }) // Rodando o comando `cody auth login`
+  } catch (error) {
+    console.error(chalk.red('❌ Erro ao realizar o login no Cody:'), (error as Error).message)
+    process.exit(1) // Finaliza o processo em caso de erro
+  }
+}
+
 // Define o prompt do Cody para geração da mensagem de commit
 const CODY_PROMPT = `
 Por favor, escreva a mensagem de commit para este diff usando a convenção de Conventional Commits: https://www.conventionalcommits.org/en/v1.0.0/.
