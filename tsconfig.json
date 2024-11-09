@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",           // Use ESNext para módulos ECMAScript
-    "moduleResolution": "node",    // Usar resolução de módulos do Node
+    "module": "ESNext",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
