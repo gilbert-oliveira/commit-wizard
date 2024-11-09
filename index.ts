@@ -72,6 +72,15 @@ interface CommitAction {
 async function ccm(): Promise<void> {
   const prompt = inquirer.createPromptModule()
 
+  // verifica se o repositório git está inicializado
+  try {
+    console.log(chalk.blue('🔄 Verificando se o diretório é um repositório git...'))
+    execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' })
+  } catch (error) {
+    console.error(chalk.red('❌ Este diretório não é um repositório git.'))
+    return
+  }
+
   // Adiciona todos os arquivos modificados ao índice
   execSync('git add .')
 

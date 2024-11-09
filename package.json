@@ -1,6 +1,6 @@
 {
   "name": "@gilbert-oliveira/commit-wizard",
-  "version": "1.0.",
+  "version": "1.0.0",
   "main": "index.ts",
   "bin": {
     "commit-wizard": "./index.ts"
