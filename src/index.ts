@@ -93,7 +93,7 @@ interface CommitAction {
 async function ccm(): Promise<void> {
   const prompt = inquirer.createPromptModule();
 
-  // verifica se o repositório git está inicializado
+  // Verifica se o repositório git está inicializado
   try {
     console.log(chalk.blue('🔄 Verificando se o diretório é um repositório git...'));
     execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
@@ -102,8 +102,12 @@ async function ccm(): Promise<void> {
     return;
   }
 
-  // Adiciona todos os arquivos modificados ao índice
-  execSync('git add .');
+  // Verifica se há alterações staged
+  const stagedChanges = execSync('git diff --cached --name-only').toString().trim();
+  if (!stagedChanges) {
+    console.log(chalk.yellow('⚠️ Não há alterações staged para o commit.'));
+    return;
+  }
 
   // Cria arquivos temporários para armazenar o prompt e o diff
   const tempPromptPath = path.join(os.tmpdir(), 'CODY_PROMPT.txt');
