@@ -113,7 +113,7 @@ async function ccm(): Promise<void> {
   const tempPromptPath = path.join(os.tmpdir(), 'CODY_PROMPT.txt');
   const tempDiffPath = path.join(os.tmpdir(), 'CODY_DIFF.patch');
   fs.writeFileSync(tempPromptPath, CODY_PROMPT);
-  fs.writeFileSync(tempDiffPath, execSync('git diff --cached').toString());
+  fs.writeFileSync(tempDiffPath, execSync("git diff --cached --ignore-all-space | grep '^[+-]'").toString());
 
   // Gera a mensagem do commit usando o diff salvo no arquivo temporário
   let generatedMessage: string;
