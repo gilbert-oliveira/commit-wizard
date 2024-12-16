@@ -180,9 +180,13 @@ async function ccm(): Promise<void> {
     return;
   }
 
-  // Realiza o commit com a mensagem final
+  // Captura os argumentos adicionais passados ao script
+  const gitArgs = process.argv.slice(2).join(' ');
+  console.log(chalk.blue('🔍 Argumentos adicionais para o commit:'), gitArgs);
+
+  // Realiza o commit com a mensagem final e os argumentos adicionais
   try {
-    execSync(`git commit -F ${tempFilePath}`);
+    execSync(`git commit -F ${tempFilePath} ${gitArgs}`);
     console.log(chalk.green.bold('✅ Commit realizado com sucesso.'));
   } catch (error) {
     console.error(chalk.red('❌ Erro ao realizar o commit:'), (error as Error).message);
