@@ -1,62 +1,92 @@
 #!/usr/bin/env ts-node
 
 import chalk from 'chalk';
-import { execSync } from 'child_process';
-import fs from 'fs';
 import inquirer from 'inquirer';
 import os from 'os';
 import path from 'path';
+import fs from 'fs';
+import { execSync } from 'child_process';
+import ora from 'ora';
+import { encode, decode } from 'gpt-tokenizer';
 
-// Função para verificar se o comando 'cody' está disponível
-function isCodyInstalled(): boolean {
-  try {
-    execSync('cody --version', { stdio: 'ignore' });
-    return true;
-  } catch (error) {
-    return false;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+if (!OPENAI_API_KEY) {
+  throw new Error("Chave da API do OpenAI não configurada. Defina a variável de ambiente OPENAI_API_KEY.");
+}
+
+/**
+ * Realiza a chamada à API do OpenAI.
+ * @param prompt Texto que será enviado como mensagem do usuário.
+ * @param mode Define o contexto: 'commit' para gerar mensagem de commit ou outro valor para resumo.
+ * @returns Resposta da API (string com a mensagem ou o resumo).
+ */
+export async function callOpenAI(prompt: string, mode: string = 'commit'): Promise<string> {
+  const url = 'https://api.openai.com/v1/chat/completions';
+
+  // Escolhe o prompt inicial de acordo com o modo.
+  const systemPrompt =
+    mode === 'commit'
+      ? "Você é um assistente que gera mensagens de commit seguindo a convenção do Conventional Commits."
+      : "Você é um assistente que resume alterações de código de forma breve, usando linguagem imperativa em português.";
+
+  const body = {
+    model: "gpt-4-turbo",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.2
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erro na API OpenAI: ${response.statusText}`);
   }
+
+  const data = await response.json();
+  // Retorna a resposta do primeiro "choice".
+  return data.choices[0].message.content.trim();
 }
 
-// Função para instalar o 'cody' automaticamente
-function installCody(): void {
-  console.log(chalk.blue('🚀 Instalando o cody automaticamente...'));
-  try {
-    execSync('npm i -g @sourcegraph/cody', { stdio: 'inherit' });
-    console.log(chalk.green('✅ Cody instalado com sucesso!'));
-  } catch (error) {
-    console.error(chalk.red('❌ Erro ao instalar o Cody:'), (error as Error).message);
-    process.exit(1);
+/**
+ * Divide o diff em chunks menores com base na contagem de tokens.
+ * Utiliza o gpt-tokenizer para garantir que cada chunk não exceda o limite de tokens.
+ * @param diff O diff completo em formato de string.
+ * @param maxTokens Quantidade máxima de tokens permitida para cada chunk (padrão: 1000 tokens).
+ * @returns Array de strings, cada uma representando um chunk.
+ */
+export function chunkDiff(diff: string, maxTokens: number = 1000): string[] {
+  // Codifica o diff para obter o array de tokens.
+  const tokens = encode(diff);
+
+  // Se o diff couber em um único chunk, retorna-o diretamente.
+  if (tokens.length <= maxTokens) {
+    return [diff];
   }
-}
 
-// Verifica se o 'cody' está instalado, caso contrário, instala
-if (!isCodyInstalled()) {
-  installCody();
-}
+  const chunks: string[] = [];
 
-// Função para verificar se está logado no cody
-function isCodyLoggedIn(): boolean {
-  try {
-    execSync('cody auth whoami', { stdio: 'ignore' });
-    return true;
-  } catch (error) {
-    return false;
+  // Percorre os tokens de forma que cada chunk contenha no máximo maxTokens tokens.
+  for (let i = 0; i < tokens.length; i += maxTokens) {
+    const chunkTokens = tokens.slice(i, i + maxTokens);
+    const chunkText = decode(chunkTokens);
+    chunks.push(chunkText);
   }
+
+  return chunks;
 }
 
-// Verificar se o usuário está logado no Cody, se não estiver, roda o comando para logar
-if (!isCodyLoggedIn()) {
-  console.log(chalk.blue('🔑 Realize o login no Cody...'));
-  try {
-    execSync('cody auth login --web', { stdio: 'inherit' });
-  } catch (error) {
-    console.error(chalk.red('❌ Erro ao realizar o login no Cody:'), (error as Error).message);
-    process.exit(1);
-  }
-}
 
-// Define o prompt do Cody para geração da mensagem de commit
-const CODY_PROMPT = `
+// Pré-prompt para a geração da mensagem de commit conforme as convenções
+const COMMIT_PROMPT = `
 Por favor, escreva a mensagem de commit para este diff usando a convenção de Conventional Commits: https://www.conventionalcommits.org/en/v1.0.0/.
 A mensagem deve começar com um tipo de commit, como:
   feat: para novas funcionalidades
@@ -86,59 +116,96 @@ Use sempre linguagem imperativa e primeira pessoa do singular, como:
 Lembre-se: os textos fora do Conventional Commit devem ser em português.
 `;
 
-interface CommitAction {
-  action: 'confirm' | 'edit' | 'cancel';
-}
-
-async function ccm(): Promise<void> {
-  const prompt = inquirer.createPromptModule();
-
-  // Verifica se o repositório git está inicializado
+async function main(): Promise<void> {
+  // Verifica se o diretório é um repositório git.
   try {
-    console.log(chalk.blue('🔄 Verificando se o diretório é um repositório git...'));
     execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
-  } catch (error) {
+  } catch {
     console.error(chalk.red('❌ Este diretório não é um repositório git.'));
-    return;
+    process.exit(1);
   }
 
-  // Verifica se há alterações staged
-  const stagedChanges = execSync('git diff --cached --name-only').toString().trim();
-  if (!stagedChanges) {
-    console.log(chalk.yellow('⚠️ Não há alterações staged para o commit.'));
-    return;
+  // Verifica se há alterações staged, desconsiderando arquivos .lock
+  let stagedFiles: string;
+  try {
+    stagedFiles = execSync(
+      'git diff --cached --name-only -- . ":(exclude)*.lock"',
+      { encoding: 'utf8' }
+    ).toString().trim();
+    if (!stagedFiles) {
+      console.log(chalk.yellow('⚠️ Não há alterações staged para o commit.'));
+      process.exit(0);
+    }
+  } catch (error) {
+    console.error(chalk.red('❌ Erro ao verificar alterações staged:'), error);
+    process.exit(1);
   }
 
-  // Cria arquivos temporários para armazenar o prompt e o diff
-  const tempPromptPath = path.join(os.tmpdir(), 'CODY_PROMPT.txt');
-  const tempDiffPath = path.join(os.tmpdir(), 'CODY_DIFF.patch');
-  fs.writeFileSync(tempPromptPath, CODY_PROMPT);
-  fs.writeFileSync(tempDiffPath, execSync("git diff --cached --ignore-all-space | grep '^[+-]'").toString());
+  // Obtém o diff completo das alterações staged, ignorando arquivos .lock
+  let diff: string;
+  try {
+    diff = execSync(
+      'git diff --cached -- . ":(exclude)*.lock"',
+      { encoding: 'utf8' }
+    );
+  } catch (error) {
+    console.error(chalk.red('❌ Erro ao obter o diff:'), error);
+    process.exit(1);
+  }
 
-  // Gera a mensagem do commit usando o diff salvo no arquivo temporário
+  // Divide o diff em chunks com base no número máximo de tokens.
+  const MAX_TOKENS = 1000;
+  const chunks = chunkDiff(diff, MAX_TOKENS);
+  let inputForCommit: string;
+
+  if (chunks.length === 1) {
+    inputForCommit = chunks[0];
+  } else {
+    // Se houver vários chunks, gera um resumo para todos eles utilizando um único spinner.
+    const partialSummaries: string[] = [];
+    const chunkSummaryPrefix =
+      "A partir do diff abaixo, extraia um resumo breve das alterações (use linguagem imperativa e em português):";
+    
+    // Inicia um spinner único para todo o processo
+    const spinnerSummary = ora("Gerando resumo do commit.").start();
+
+    try {
+      for (const chunk of chunks) {
+        const prompt = `${chunkSummaryPrefix}\n\n${chunk}`;
+        const summary = await callOpenAI(prompt, 'resumo');
+        partialSummaries.push(summary);
+      }
+      spinnerSummary.succeed("Resumo do commit gerado.");
+    } catch (error) {
+      spinnerSummary.fail("Erro ao gerar resumo do commit.");
+      console.error(chalk.red('❌ Erro ao gerar resumo para o commit:'), error);
+      process.exit(1);
+    }
+    inputForCommit = partialSummaries.join("\n\n");
+  }
+
+  // Gera a mensagem de commit com o pré-prompt e o diff (ou seus resumos).
+  const finalPrompt = `${COMMIT_PROMPT}\n\nDiff:\n\n${inputForCommit}`;
+  const spinnerCommit = ora('Gerando mensagem de commit com base no diff...').start();
+
   let generatedMessage: string;
   try {
-    console.log(chalk.blue.bold('⌛ Gerando mensagem de commit com o Cody...'));
-    const response = execSync(
-      `cody chat --context-file ${tempDiffPath} --stdin -m "$(cat ${tempPromptPath})"`
-    ).toString();
-
-    // Extrai o bloco de código delimitado por ``` usando regex
-    const match = response.match(/```([\s\S]*?)```/);
-    generatedMessage = match ? match[1].trim() : response.trim();
-
-    console.log(chalk.greenBright('\n✨ Mensagem de commit gerada automaticamente:'));
-    console.log(chalk.yellowBright(generatedMessage));
+    generatedMessage = await callOpenAI(finalPrompt, 'commit');
+    // Remove os delimitadores de bloco de código (```)
+    generatedMessage = generatedMessage.replace(/```/g, '').trim();
+    spinnerCommit.succeed('Mensagem de commit gerada com sucesso.');
   } catch (error) {
-    console.error(chalk.red('❌ Erro ao gerar mensagem de commit com o Cody:'), (error as Error).message);
-    return;
-  } finally {
-    fs.unlinkSync(tempPromptPath); // Remove o arquivo temporário do prompt
-    fs.unlinkSync(tempDiffPath); // Remove o arquivo temporário do diff
+    spinnerCommit.fail('Erro ao gerar a mensagem de commit.');
+    console.error(chalk.red('❌ Erro ao gerar a mensagem de commit:'), error);
+    process.exit(1);
   }
 
-  // Pergunta ao usuário se ele quer editar, confirmar ou cancelar o commit
-  const { action }: CommitAction = await prompt([
+  console.log(chalk.greenBright('\n✨ Mensagem de commit gerada automaticamente:'));
+  console.log(chalk.yellowBright(generatedMessage));
+
+  // Pergunta ao usuário se deseja confirmar, editar ou cancelar o commit.
+  const promptModule = inquirer.createPromptModule();
+  const { action } = await promptModule<{ action: 'confirm' | 'edit' | 'cancel' }>([
     {
       type: 'list',
       name: 'action',
@@ -151,7 +218,7 @@ async function ccm(): Promise<void> {
     },
   ]);
 
-  // Caminho temporário para salvar a mensagem gerada
+  // Cria um arquivo temporário para armazenar a mensagem (para edição se necessário).
   const tempFilePath = path.join(os.tmpdir(), 'COMMIT_EDITMSG');
   fs.writeFileSync(tempFilePath, generatedMessage);
 
@@ -161,39 +228,39 @@ async function ccm(): Promise<void> {
     try {
       execSync(`${editor} ${tempFilePath}`, { stdio: 'inherit' });
     } catch (error) {
-      console.error(chalk.red('❌ Erro ao abrir o editor:'), (error as Error).message);
-      return;
+      console.error(chalk.red('❌ Erro ao abrir o editor:'), error);
+      process.exit(1);
     }
   } else if (action === 'cancel') {
     console.log(chalk.yellow('🚫 Commit cancelado pelo usuário.'));
     fs.unlinkSync(tempFilePath);
-    return;
+    process.exit(0);
   }
 
-  // Lê a mensagem do arquivo temporário após a edição
+  // Lê a mensagem final (após eventual edição).
   const finalMessage = fs.readFileSync(tempFilePath, 'utf8').trim();
-
-  // Verifica se a mensagem está vazia
   if (!finalMessage) {
-    console.log(chalk.red('❌ Nenhuma mensagem inserida, commit cancelado.'));
+    console.error(chalk.red('❌ Nenhuma mensagem inserida, commit cancelado.'));
     fs.unlinkSync(tempFilePath);
-    return;
+    process.exit(1);
   }
 
-  // Captura os argumentos adicionais passados ao script
+  // Captura quaisquer argumentos adicionais passados para o comando.
   const gitArgs = process.argv.slice(2).join(' ');
   console.log(chalk.blue('🔍 Argumentos adicionais para o commit:'), gitArgs);
 
-  // Realiza o commit com a mensagem final e os argumentos adicionais
+  // Realiza o commit com a mensagem final.
   try {
-    execSync(`git commit -F ${tempFilePath} ${gitArgs}`);
+    execSync(`git commit -F ${tempFilePath} ${gitArgs}`, { stdio: 'inherit' });
     console.log(chalk.green.bold('✅ Commit realizado com sucesso.'));
   } catch (error) {
-    console.error(chalk.red('❌ Erro ao realizar o commit:'), (error as Error).message);
+    console.error(chalk.red('❌ Erro ao realizar o commit:'), error);
   } finally {
     fs.unlinkSync(tempFilePath);
   }
 }
 
-// Chama a função principal
-ccm().catch((err) => console.error(chalk.red('❌ Erro durante o commit:'), err));
+main().catch((err) => {
+  console.error(chalk.red('❌ Erro durante o commit:'), err);
+  process.exit(1);
+});
