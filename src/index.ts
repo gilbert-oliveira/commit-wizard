@@ -11,7 +11,20 @@ import { encode, decode } from 'gpt-tokenizer';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
-  throw new Error("Chave da API do OpenAI não configurada. Defina a variável de ambiente OPENAI_API_KEY.");
+  console.log(
+    chalk.redBright('\n🚨 Erro: A variável de ambiente ') +
+    chalk.yellow('OPENAI_API_KEY') +
+    chalk.redBright(' não está definida.\n')
+  );
+  console.log(
+    chalk.white('→ Defina sua chave com: ') + 
+    chalk.cyan('export OPENAI_API_KEY="sua-chave"') +
+    chalk.white(' ou configure no seu ') +
+    chalk.cyan('.bashrc') +
+    chalk.white(' ou ') +
+    chalk.cyan('.zshrc\n')
+  );
+  process.exit(1);
 }
 
 /**
