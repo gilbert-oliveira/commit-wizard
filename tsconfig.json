@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -16,9 +16,7 @@
     "outDir": "./dist",
     "sourceMap": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src"],
   "exclude": [
     "node_modules",
     "dist"
