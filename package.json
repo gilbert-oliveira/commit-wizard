@@ -1,17 +1,17 @@
 {
   "name": "@gilbert_oliveira/commit-wizard",
-  "version": "1.0.13",
+  "version": "1.0.17",
   "description": "O **Commit Wizard** é uma ferramenta automatizada para geração de mensagens de commit com base na convenção de **Conventional Commits**. Ele ajuda a garantir que suas mensagens de commit sigam um padrão consistente e facilite a comunicação de mudanças no código.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/index.js"
+    "commit-wizard": "dist/index.js"
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "start": "bun run src/index.ts",
+    "start": "node dist/index.js",
     "dev": "tsc --watch",
     "build": "tsc"
   },
@@ -40,7 +40,6 @@
   },
   "homepage": "https://github.com/gilbert-oliveira/commit-wizard#readme",
   "devDependencies": {
-    "@types/bun": "latest",
     "@types/node": "^22.14.1",
     "typescript": "^5.8.3"
   },

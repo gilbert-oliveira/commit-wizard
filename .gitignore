@@ -34,3 +34,5 @@ yarn.lock
 
 # Optional: Ignore package manager-specific lock files
 yarn.lock
+
+.npmrc
