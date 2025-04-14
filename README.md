@@ -1,58 +1,80 @@
 # Commit Wizard
 
-O **Commit Wizard** é uma ferramenta automatizada para a geração de mensagens de commit com base na convenção de **Conventional Commits**. Ele ajuda a garantir que suas mensagens de commit sigam um padrão consistente e facilite a comunicação de mudanças no código.
+Gere mensagens de commit convencionais automaticamente com base nas alterações no código usando a API da OpenAI.
 
-## Funcionalidades
+## ✨ Visão Geral
 
-- Geração automática de mensagens de commit usando o **Cody**.
-- Garantia de que a mensagem de commit siga o padrão **Conventional Commits**.
-- Oferece a opção de editar ou confirmar a mensagem gerada.
-- Verificação se o repositório Git está inicializado e se o usuário está autenticado no **Cody**.
-- Integração com a ferramenta **Cody** para sugestão de mensagens de commit baseadas no diff de código.
+Este projeto é uma ferramenta de linha de comando (CLI) chamada `commit-wizard`, que utiliza a API da OpenAI para gerar mensagens de commit com base no `diff` dos arquivos que estão em *staged* no Git.
 
-## Instalação
-
-### Requisitos
-
-- **Node.js**: A ferramenta requer o **Node.js** para ser executada.
-- **Cody**: A ferramenta usa o **Cody** da Sourcegraph para gerar as mensagens de commit.
-
-### Instalação Global
-
-Para instalar o Commit Wizard globalmente, execute o seguinte comando:
+## 🚀 Instalação
 
 ```bash
-npm install -g @gilbert_oliveira/commit-wizard
+npm install -g commit-wizard
 ```
 
-### Instalação Local
-
-Para instalar o Commit Wizard localmente, execute o seguinte comando:
+Ou, se estiver usando localmente:
 
 ```bash
-npm install @gilbert_oliveira/commit-wizard
+npm install
 ```
 
-## Uso
+## ⚙️ Configuração
 
-Para usar o Commit Wizard, execute o seguinte comando no terminal:
+Antes de usar, você precisa definir a variável de ambiente com sua chave da OpenAI:
 
 ```bash
-commit-wizard
+export OPENAI_API_KEY=sk-...
 ```
 
-O Commit Wizard irá gerar uma mensagem de commit com base nas mudanças no repositório Git e na convenção de **Conventional Commits**. Você pode editar a mensagem gerada ou confirmá-la.
+Você pode adicionar isso no seu `.bashrc`, `.zshrc` ou arquivo de ambiente equivalente.
 
-## Contribuição
+## 🧠 Como Funciona
 
-Se você quiser contribuir com o Commit Wizard, siga as instruções abaixo:
+1. O script lê os arquivos que estão em *staged* (`git diff --cached`).
+2. Envia esse diff para a API da OpenAI.
+3. Recebe uma sugestão de mensagem de commit no formato convencional (`feat:`, `fix:`, etc).
+4. Exibe a mensagem para revisão.
 
-1. Faça um fork do repositório.
-2. Crie uma nova branch com a sua feature: `git checkout -b my-feature`
-3. Faça o commit das suas alterações: `git commit -m 'feat: My new feature'`
-4. Faça o push para a sua branch: `git push origin my-feature`
-5. Abra um Pull Request
+## 📝 Exemplo de Uso
 
-## Licença
+```bash
+npx commit-wizard
+```
+
+Resultado esperado:
+
+```
+Sugestão de commit:
+feat: adiciona verificação automática para arquivos staged usando GPT-4
+```
+
+## 🛠 Tecnologias Utilizadas
+
+- Node.js
+- TypeScript
+- OpenAI API
+- Commander (CLI)
+- Dotenv
+
+## 🧪 Scripts Disponíveis
+
+- `npm run build`: compila o TypeScript para JavaScript.
+- `npm start`: executa o CLI direto pelo TypeScript (com ts-node).
+- `npm run dev`: roda em modo de desenvolvimento com `ts-node-dev`.
+
+## ✅ Commit Convencional
+
+Este projeto segue o padrão de commit convencional, como:
+
+- `feat:` para novas funcionalidades
+- `fix:` para correções de bugs
+- `docs:` para documentação
+- `refactor:` para mudanças internas no código
+
+## 📄 Licença
 
 Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+Feito com 💜 por Gilbert de Oliveira Santos
