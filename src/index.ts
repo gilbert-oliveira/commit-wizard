@@ -142,7 +142,7 @@ async function main(): Promise<void> {
   let stagedFiles: string;
   try {
     stagedFiles = execSync(
-      'git diff --cached --name-only -- . ":(exclude)*.lock"',
+      'git diff --cached --name-only -- . ":(exclude)*.lock*"',
       { encoding: 'utf8' }
     ).toString().trim();
     if (!stagedFiles) {
@@ -154,11 +154,11 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Obtém o diff completo das alterações staged, ignorando arquivos .lock
+  // Obtém o diff completo das alterações staged, ignorando arquivos .lock*
   let diff: string;
   try {
     diff = execSync(
-      'git diff --cached -- . ":(exclude)*.lock"',
+      'git diff --cached -- . ":(exclude)*.lock*"',
       { encoding: 'utf8' }
     );
   } catch (error) {
