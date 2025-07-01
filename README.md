@@ -10,6 +10,7 @@ Gere mensagens de commit convencionais automaticamente com base nas alterações
 ## ✨ Funcionalidades
 
 - 🤖 **Geração inteligente de commits** usando GPT-4o/GPT-4o Mini
+- 🎯 **Multi-commit inteligente** - divide mudanças por contexto 🆕
 - 📝 **Convenção de Conventional Commits** automática
 - 🌍 **Suporte multilíngue** (Português e Inglês)
 - ⚙️ **Configuração flexível** (local e global)
@@ -19,7 +20,7 @@ Gere mensagens de commit convencionais automaticamente com base nas alterações
 - 🔄 **Regeneração** de mensagens
 - 📋 **Cópia para clipboard**
 - 🎯 **Detecção de breaking changes**
-- 🧪 **Cobertura de testes** completa
+- 🧪 **Cobertura de testes** completa (63 testes)
 
 ## 🚀 Instalação
 
@@ -87,11 +88,67 @@ commit-wizard
 
 ### Comandos Disponíveis
 ```bash
-commit-wizard                 # Gerar commit normal
+commit-wizard                 # Gerar commit normal (um único commit)
+commit-wizard --split         # Multi-commit por contexto 🆕
 commit-wizard --config        # Configurar o wizard
 commit-wizard --info          # Ver informações do sistema
 commit-wizard --help          # Mostrar ajuda
 ```
+
+### 🎯 Multi-Commit Inteligente 🆕
+
+O Commit Wizard agora pode **dividir automaticamente** suas mudanças em **múltiplos commits** organizados por contexto:
+
+```bash
+git add .
+commit-wizard --split
+```
+
+**Como funciona:**
+- 🧠 **Análise inteligente** dos arquivos alterados
+- 📂 **Agrupamento por contexto**: testes, docs, features, fixes, etc.
+- 🎯 **Priorização automática**: bugs primeiro, depois testes, docs, features
+- ✨ **Commits bem organizados** com mensagens específicas para cada grupo
+
+**Exemplo de saída:**
+```
+🎯 Multi-Commit Inteligente
+📋 3 commits propostos:
+
+1. 🐛 fix: corrige validação de entrada
+   Arquivos (2): src/auth.ts, src/validators.ts
+
+2. 🧪 test: adiciona testes para autenticação  
+   Arquivos (1): tests/auth.test.ts
+
+3. 📚 docs: atualiza documentação da API
+   Arquivos (1): README.md
+
+✔ Deseja prosseguir com estes commits? Yes
+
+[1/3] Processando: 🐛 fix
+✅ Commit 1: 🐛 fix: corrige validação de entrada em auth.ts
+
+[2/3] Processando: 🧪 test  
+✅ Commit 2: 🧪 test: adiciona testes abrangentes para auth
+
+[3/3] Processando: 📚 docs
+✅ Commit 3: 📚 docs: atualiza documentação da API
+
+🎉 Multi-commit concluído!
+• Commits realizados: 3/3
+✨ Histórico organizado com sucesso!
+```
+
+**Tipos de contexto detectados:**
+- 🐛 **fix** - Correções de bugs (prioridade 1)
+- 🧪 **test** - Testes (prioridade 2)  
+- 📚 **docs** - Documentação (prioridade 3)
+- 🔧 **chore** - Configurações (prioridade 4)
+- 💄 **style** - Formatação (prioridade 5)
+- ♻️ **refactor** - Refatoração (prioridade 6)
+- ✨ **feat** - Novas funcionalidades (prioridade 7)
+- 🔄 **ci** - CI/CD (prioridade 8)
 
 ### Exemplo de Output
 ```
