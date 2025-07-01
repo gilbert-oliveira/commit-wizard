@@ -12,6 +12,7 @@ import { loadConfig, saveConfig, createConfigExample, Config } from './config.js
 import { AIService } from './ai-service.js';
 import { GitUtils } from './git-utils.js';
 import { DiffProcessor } from './diff-processor.js';
+import { CommitSplitter } from './commit-splitter.js';
 
 // 🛑 Tratamento de interrupção (Ctrl+C)
 process.on('SIGINT', () => {
@@ -382,6 +383,145 @@ async function runCommitWizard(): Promise<void> {
 }
 
 /**
+ * Função para multi-commit inteligente
+ */
+async function runMultiCommit(): Promise<void> {
+  const config = loadConfig();
+
+  if (!config.apiKey) {
+    console.log(
+      chalk.redBright('\n🚨 Erro: A variável de ambiente ') +
+        chalk.yellow('OPENAI_API_KEY') +
+        chalk.redBright(' não está definida.\n')
+    );
+    process.exit(1);
+  }
+
+  const gitUtils = new GitUtils(config.excludePatterns);
+  const aiService = new AIService(config);
+  const commitSplitter = new CommitSplitter(gitUtils, config);
+
+  // Verifica se é um repositório Git
+  if (!gitUtils.isGitRepository()) {
+    console.error(chalk.red('❌ Este diretório não é um repositório git.'));
+    process.exit(1);
+  }
+
+  // Obtém status dos arquivos staged
+  const gitStatus = gitUtils.getStagedStatus();
+
+  if (!gitStatus.hasStagedFiles) {
+    console.log(chalk.yellow('⚠️ Não há alterações staged para o commit.'));
+    console.log(
+      chalk.cyan('💡 Dica: Use ') +
+        chalk.white('git add <arquivos>') +
+        chalk.cyan(' para adicionar arquivos ao stage.')
+    );
+    process.exit(0);
+  }
+
+  console.log(chalk.blue.bold('\n🎯 Multi-Commit Inteligente'));
+  console.log(chalk.gray('Dividindo alterações em commits organizados por contexto...\n'));
+
+  try {
+    // Analisa e divide o diff
+    const splitResult = await commitSplitter.analyzeAndSplit();
+
+    if (splitResult.groups.length <= 1) {
+      console.log(chalk.yellow('📝 Apenas um contexto detectado. Fazendo commit normal...'));
+      return runCommitWizard();
+    }
+
+    // Exibe preview dos grupos propostos
+    console.log(chalk.cyan.bold(`\n📋 ${splitResult.groups.length} commits propostos:`));
+
+    for (let i = 0; i < splitResult.groups.length; i++) {
+      const group = splitResult.groups[i];
+      console.log(chalk.white(`\n${i + 1}. ${group.emoji} ${group.type}: ${group.description}`));
+      console.log(chalk.gray(`   Arquivos (${group.files.length}): ${group.files.join(', ')}`));
+    }
+
+    // Confirma se quer prosseguir
+    const { proceed } = await inquirer.prompt<{ proceed: boolean }>([
+      {
+        type: 'confirm',
+        name: 'proceed',
+        message: 'Deseja prosseguir com estes commits?',
+        default: true,
+      },
+    ]);
+
+    if (!proceed) {
+      console.log(chalk.yellow('🚫 Multi-commit cancelado pelo usuário.'));
+      return;
+    }
+
+    // Executa commits sequencialmente
+    let successCount = 0;
+    const totalCommits = splitResult.groups.length;
+
+    for (let i = 0; i < splitResult.groups.length; i++) {
+      const group = splitResult.groups[i];
+
+      console.log(
+        chalk.blue(`\n[${i + 1}/${totalCommits}] Processando: ${group.emoji} ${group.type}`)
+      );
+
+      try {
+        // Remove todos os arquivos do stage
+        execSync('git reset HEAD .');
+
+        // Adiciona apenas os arquivos deste grupo
+        for (const file of group.files) {
+          execSync(`git add "${file}"`);
+        }
+
+        // Gera mensagem de commit específica para este grupo
+        const response = await aiService.generateCommitMessage(group.diff);
+        let commitMessage = response.content;
+
+        // Adiciona emoji se configurado
+        if (config.includeEmoji && !commitMessage.startsWith(group.emoji)) {
+          commitMessage = `${group.emoji} ${commitMessage}`;
+        }
+
+        // Realiza o commit
+        gitUtils.commit(commitMessage);
+
+        console.log(chalk.green(`✅ Commit ${i + 1}: ${commitMessage.split('\n')[0]}`));
+        successCount++;
+      } catch (error) {
+        console.error(chalk.red(`❌ Erro no commit ${i + 1}:`), error);
+
+        const { continueOnError } = await inquirer.prompt<{ continueOnError: boolean }>([
+          {
+            type: 'confirm',
+            name: 'continueOnError',
+            message: 'Deseja continuar com os próximos commits?',
+            default: false,
+          },
+        ]);
+
+        if (!continueOnError) {
+          break;
+        }
+      }
+    }
+
+    // Resultado final
+    console.log(chalk.cyan.bold(`\n🎉 Multi-commit concluído!`));
+    console.log(chalk.white(`• Commits realizados: ${successCount}/${totalCommits}`));
+
+    if (successCount > 0) {
+      console.log(chalk.green('✨ Histórico organizado com sucesso!'));
+    }
+  } catch (error) {
+    console.error(chalk.red('❌ Erro durante o multi-commit:'), error);
+    process.exit(1);
+  }
+}
+
+/**
  * Função principal
  */
 async function main(): Promise<void> {
@@ -392,11 +532,13 @@ async function main(): Promise<void> {
     console.log(chalk.blue.bold('\n🧙‍♂️ Commit Wizard - Gerador de commits com IA\n'));
     console.log(chalk.white('Uso: commit-wizard [opções]\n'));
     console.log(chalk.white('Opções:'));
-    console.log(chalk.white('  --config, -c    Abrir menu de configuração'));
-    console.log(chalk.white('  --info, -i      Mostrar informações do sistema'));
-    console.log(chalk.white('  --help, -h      Mostrar esta ajuda'));
+    console.log(chalk.white('  --config, -c      Abrir menu de configuração'));
+    console.log(chalk.white('  --info, -i        Mostrar informações do sistema'));
+    console.log(chalk.white('  --split, -s       Dividir em múltiplos commits por contexto'));
+    console.log(chalk.white('  --help, -h        Mostrar esta ajuda'));
     console.log(chalk.white('\nExemplos:'));
     console.log(chalk.cyan('  commit-wizard                 # Gerar commit normal'));
+    console.log(chalk.cyan('  commit-wizard --split         # Multi-commit por contexto'));
     console.log(chalk.cyan('  commit-wizard --config        # Configurar o wizard'));
     console.log(chalk.cyan('  commit-wizard --info          # Ver informações do sistema'));
     return;
@@ -411,6 +553,11 @@ async function main(): Promise<void> {
     const config = loadConfig();
     const gitUtils = new GitUtils(config.excludePatterns);
     displaySystemInfo(config, gitUtils);
+    return;
+  }
+
+  if (args.includes('--split') || args.includes('-s')) {
+    await runMultiCommit();
     return;
   }
 

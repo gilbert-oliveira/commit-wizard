@@ -178,4 +178,36 @@ export class GitUtils {
       throw new Error(`Erro ao obter branches: ${error}`);
     }
   }
+
+  /**
+   * Obtém lista de arquivos alterados (staged)
+   */
+  getChangedFiles(): string[] {
+    const status = this.getStagedStatus();
+    return status.stagedFiles;
+  }
+
+  /**
+   * Obtém diff de um arquivo específico
+   */
+  getFileDiff(filePath: string): string {
+    if (!this.isGitRepository()) {
+      throw new Error('Diretório atual não é um repositório Git');
+    }
+
+    try {
+      const diff = execSync(`git diff --cached -- "${filePath}"`, { encoding: 'utf8' });
+      return diff;
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * Obtém diff completo dos arquivos staged
+   */
+  getStagedDiff(): string {
+    const status = this.getStagedStatus();
+    return status.diff;
+  }
 }

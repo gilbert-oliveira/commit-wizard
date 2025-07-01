@@ -8,6 +8,13 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [1.1.0] - 2024-01-XX
 
 ### ✨ Adicionado
+- **🎯 Multi-Commit Inteligente**: Nova funcionalidade `--split` que divide automaticamente mudanças em múltiplos commits organizados por contexto
+- **Análise inteligente de contexto**: Detecção automática de tipo de arquivo (testes, docs, configuração, etc.)
+- **Agrupamento por relacionamento**: Arquivos relacionados são agrupados no mesmo commit
+- **Priorização automática**: Ordem inteligente (bugs → testes → docs → features)
+- **Timeout para API**: Timeout de 30 segundos para evitar travamentos
+- **Tratamento de interrupção**: Ctrl+C agora funciona com mensagens amigáveis
+- **Novos métodos GitUtils**: `getChangedFiles()`, `getFileDiff()`, `getStagedDiff()`
 - **Arquitetura modular**: Código refatorado em módulos especializados
 - **Sistema de configuração**: Suporte a arquivos `.commit-wizard.json` local e global
 - **Menu de configuração interativo**: `commit-wizard --config`
@@ -21,7 +28,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Regeneração de mensagens**: Opção para gerar nova mensagem
 - **Cópia para clipboard**: Copiar mensagem sem fazer commit
 - **Informações de uso de tokens**: Exibição do consumo da API
-- **Testes unitários**: Cobertura completa de testes
+- **Testes unitários**: 63 testes com cobertura completa
 - **CI/CD**: GitHub Actions para testes e publicação
 - **Linting e formatação**: ESLint e Prettier configurados
 - **Documentação melhorada**: README expandido com exemplos
