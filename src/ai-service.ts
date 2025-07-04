@@ -204,15 +204,16 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
       // Remove linhas vazias
       if (!trimmed) return false;
 
-      // Remove linhas que contêm comandos shell potenciais ou nomes de funções
+      // Remove apenas linhas que são claramente comandos shell ou funções isoladas (mais específico)
+      // Não remove se faz parte de uma mensagem de commit válida
       if (
-        trimmed.includes('cleanDiffOutput') ||
-        trimmed.includes('cleanCommitMessage') ||
-        trimmed.includes('cleanApiResponse') ||
-        trimmed.includes('AIService') ||
-        trimmed.includes('git-utils.test.ts') ||
-        trimmed.includes('execSync') ||
-        trimmed.includes('GitUtils')
+        (trimmed === 'cleanDiffOutput' ||
+          trimmed === 'cleanCommitMessage' ||
+          trimmed === 'cleanApiResponse' ||
+          trimmed === 'AIService' ||
+          trimmed === 'execSync' ||
+          trimmed === 'GitUtils') &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)/)
       ) {
         return false;
       }
@@ -246,16 +247,25 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
         return false;
 
       // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      // MAS apenas se não forem parte de uma mensagem de commit válida
       if (
         trimmed.match(/[;|&$`]/) &&
-        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/)
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/) &&
+        !trimmed.includes('test') && // Preserva mensagens sobre testes
+        !trimmed.includes('adiciona') && // Preserva mensagens normais
+        !trimmed.includes('atualiza') &&
+        !trimmed.includes('melhora')
       ) {
         return false;
       }
 
-      // Remove linhas que parecem ser nomes de métodos ou classes TypeScript
+      // Remove linhas que parecem ser nomes de métodos ou classes TypeScript isoladas
+      // MAS preserva se fazem parte de uma mensagem de commit
       if (
-        trimmed.match(/^(private|public|protected|static|class|interface|function|export|import)/)
+        trimmed.match(
+          /^(private|public|protected|static|class|interface|function|export|import)/
+        ) &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)/)
       ) {
         return false;
       }
@@ -272,8 +282,8 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
     // Remove linhas vazias no início e fim
     result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
 
-    // Sanitiza caracteres especiais que podem causar problemas
-    result = result.replace(/[`$\\]/g, '\\$&');
+    // Sanitiza caracteres especiais que podem causar problemas (mais conservador)
+    result = result.replace(/[`\\]/g, '\\$&');
 
     // Valida se o resultado é uma mensagem de commit válida
     this.validateCommitMessage(result);

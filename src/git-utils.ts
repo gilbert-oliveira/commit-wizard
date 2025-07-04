@@ -213,13 +213,15 @@ export class GitUtils {
       // Remove linhas vazias
       if (!trimmed) return false;
 
-      // Remove linhas que contêm comandos shell potenciais
+      // Remove apenas comandos shell ou funções isoladas (mais específico)
+      // Não remove se faz parte de uma mensagem de commit válida
       if (
-        trimmed.includes('cleanDiffOutput') ||
-        trimmed.includes('cleanCommitMessage') ||
-        trimmed.includes('cleanApiResponse') ||
-        trimmed.includes('AIService') ||
-        trimmed.includes('git-utils.test.ts')
+        (trimmed === 'cleanDiffOutput' ||
+          trimmed === 'cleanCommitMessage' ||
+          trimmed === 'cleanApiResponse' ||
+          trimmed === 'AIService' ||
+          trimmed === 'git-utils.test.ts') &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)/)
       ) {
         return false;
       }
@@ -253,9 +255,14 @@ export class GitUtils {
         return false;
 
       // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      // MAS preserva mensagens de commit válidas
       if (
         trimmed.match(/[;|&$`]/) &&
-        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/)
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/) &&
+        !trimmed.includes('test') && // Preserva mensagens sobre testes
+        !trimmed.includes('adiciona') && // Preserva mensagens normais
+        !trimmed.includes('atualiza') &&
+        !trimmed.includes('melhora')
       ) {
         return false;
       }
@@ -272,8 +279,8 @@ export class GitUtils {
     // Remove linhas vazias no início e fim
     result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
 
-    // Sanitiza caracteres especiais que podem causar problemas
-    result = result.replace(/[`$\\]/g, '\\$&');
+    // Sanitiza caracteres especiais que podem causar problemas (mais conservador)
+    result = result.replace(/[`\\]/g, '\\$&');
 
     return result;
   }
