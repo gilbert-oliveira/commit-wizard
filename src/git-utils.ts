@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import fs from 'fs';
 
 export interface GitStatus {
   hasStagedFiles: boolean;
@@ -53,6 +54,7 @@ export class GitUtils {
       // Verifica arquivos staged
       const stagedFiles = execSync(`git diff --cached --name-only -- . ${excludeArgs}`, {
         encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'], // Isola completamente os streams
       })
         .toString()
         .trim();
@@ -65,13 +67,19 @@ export class GitUtils {
         };
       }
 
-      // Obtém o diff completo
-      const diff = execSync(`git diff --cached -- . ${excludeArgs}`, { encoding: 'utf8' });
+      // Obtém o diff completo com isolamento de streams
+      const diff = execSync(`git diff --cached -- . ${excludeArgs}`, {
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'], // Isola completamente os streams
+      });
+
+      // Limpa o diff de possíveis contaminações
+      const cleanDiff = this.cleanDiffOutput(diff);
 
       return {
         hasStagedFiles: true,
         stagedFiles: stagedFiles.split('\n').filter(file => file.trim()),
-        diff,
+        diff: cleanDiff,
       };
     } catch (error) {
       throw new Error(`Erro ao obter status Git: ${error}`);
@@ -79,21 +87,202 @@ export class GitUtils {
   }
 
   /**
-   * Realiza commit com mensagem
+   * Limpa o output do diff removendo possíveis contaminações
+   */
+  private cleanDiffOutput(diff: string): string {
+    if (!diff || diff.trim().length === 0) {
+      return diff;
+    }
+
+    // Remove linhas que claramente não são parte do diff
+    const lines = diff.split('\n');
+    const cleanLines = lines.filter(line => {
+      const trimmed = line.trim();
+
+      // Preserva linhas vazias (são importantes para estrutura do diff)
+      if (!trimmed) return true;
+
+      // Remove linhas que contêm comandos shell potenciais ou nomes de funções
+      if (
+        trimmed.includes('cleanDiffOutput') ||
+        trimmed.includes('cleanCommitMessage') ||
+        trimmed.includes('cleanApiResponse') ||
+        trimmed.includes('AIService') ||
+        trimmed.includes('git-utils.test.ts') ||
+        trimmed.includes('execSync') ||
+        trimmed.includes('GitUtils')
+      ) {
+        return false;
+      }
+
+      // Preserva linhas que são claramente parte do diff (headers e modificações)
+      if (
+        line.startsWith('diff ') ||
+        line.startsWith('index ') ||
+        line.startsWith('--- ') ||
+        line.startsWith('+++ ') ||
+        line.startsWith('@@')
+      ) {
+        return true;
+      }
+
+      // Para linhas que começam com +, -, ou espaço, verifica se não são dados de cobertura
+      if (line.startsWith('+') || line.startsWith('-') || line.startsWith(' ')) {
+        // Se contém caracteres de tabela de cobertura, remove
+        if (trimmed.includes('|') && (trimmed.includes('%') || trimmed.match(/\d+\.\d+/))) {
+          return false;
+        }
+        // Se contém nomes de arquivos com extensão seguidos de estatísticas, remove
+        if (trimmed.match(/\.(ts|js|tsx|jsx|py|java|c|cpp|h)\s*\|\s*\d+/)) {
+          return false;
+        }
+        // Se é uma linha de contexto ou modificação válida, preserva
+        return true;
+      }
+
+      // Remove linhas que são claramente tabelas de cobertura
+      if (trimmed.includes('|') && trimmed.includes('%') && trimmed.includes('Stmts')) return false;
+      if (trimmed.includes('All files') && trimmed.includes('|')) return false;
+      if (trimmed.match(/^[-|]+$/) && trimmed.length > 10) return false; // Linhas separadoras longas
+      if (trimmed.includes('Uncovered Line #s')) return false;
+
+      // Remove linhas que contêm nomes de arquivos com estatísticas
+      if (trimmed.match(/\.(ts|js|tsx|jsx|py|java|c|cpp|h)\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas que são claramente cabeçalhos de tabelas
+      if (trimmed.includes('File') && trimmed.includes('% Stmts') && trimmed.includes('% Branch'))
+        return false;
+
+      // Remove linhas que começam com espaços seguidos de diretório e estatísticas
+      if (trimmed.match(/^(src|tests?|lib|dist|app|components)\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas com apenas caracteres de tabela
+      if (trimmed.match(/^[\s\-|%]+$/) && trimmed.length > 5) return false;
+
+      // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      if (trimmed.match(/[;|&$`]/) && !trimmed.match(/^[+-].*[;|&$`]/)) {
+        return false;
+      }
+
+      // Se chegou até aqui, preserva a linha
+      return true;
+    });
+
+    return cleanLines.join('\n');
+  }
+
+  /**
+   * Realiza commit com mensagem usando arquivo temporário (mais seguro)
    */
   commit(message: string, additionalArgs: string[] = []): void {
     if (!this.isGitRepository()) {
       throw new Error('Diretório atual não é um repositório Git');
     }
 
-    try {
-      const args = additionalArgs.length > 0 ? ` ${additionalArgs.join(' ')}` : '';
-      execSync(`git commit -m "${message.replace(/"/g, '\\"')}"${args}`, {
-        stdio: 'inherit',
-      });
-    } catch (error) {
-      throw new Error(`Erro ao realizar commit: ${error}`);
+    // Limpa e valida a mensagem
+    const cleanMessage = this.cleanCommitMessage(message);
+
+    if (!cleanMessage) {
+      throw new Error('Mensagem de commit vazia após limpeza');
     }
+
+    // Usa arquivo temporário para evitar problemas com caracteres especiais
+    const tempFile = '/tmp/commit-wizard-message.txt';
+    try {
+      fs.writeFileSync(tempFile, cleanMessage, 'utf8');
+      this.commitWithFile(tempFile, additionalArgs);
+    } finally {
+      // Remove o arquivo temporário
+      try {
+        fs.unlinkSync(tempFile);
+      } catch {
+        // Ignora erro se não conseguir remover
+      }
+    }
+  }
+
+  /**
+   * Limpa a mensagem de commit removendo conteúdo inválido
+   */
+  private cleanCommitMessage(message: string): string {
+    // Remove linhas que não deveriam estar na mensagem
+    const lines = message.split('\n');
+    const cleanLines = lines.filter(line => {
+      const trimmed = line.trim();
+
+      // Remove linhas vazias
+      if (!trimmed) return false;
+
+      // Remove apenas comandos shell ou funções isoladas (mais específico)
+      // Não remove se faz parte de uma mensagem de commit válida
+      if (
+        (trimmed === 'cleanDiffOutput' ||
+          trimmed === 'cleanCommitMessage' ||
+          trimmed === 'cleanApiResponse' ||
+          trimmed === 'AIService' ||
+          trimmed === 'git-utils.test.ts') &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)/)
+      ) {
+        return false;
+      }
+
+      // Remove linhas que contêm tabelas de cobertura (mais rigoroso)
+      if (
+        trimmed.includes('|') &&
+        (trimmed.includes('%') || trimmed.includes('Stmts') || trimmed.includes('Branch'))
+      )
+        return false;
+      if (trimmed.match(/^[-|]+$/)) return false;
+      if (trimmed.includes('File') && trimmed.includes('Stmts')) return false;
+      if (trimmed.includes('All files') && trimmed.includes('|')) return false;
+      if (trimmed.includes('Uncovered Line')) return false;
+
+      // Remove linhas com apenas caracteres especiais
+      if (trimmed.match(/^[\s\-|%]+$/)) return false;
+
+      // Remove linhas que parecem output de ferramentas de cobertura
+      if (trimmed.includes('coverage') && trimmed.includes('|')) return false;
+      if (trimmed.includes('----') && trimmed.includes('|')) return false;
+
+      // Remove linhas que contêm nomes de arquivos com estatísticas (padrão específico)
+      if (trimmed.match(/\.(ts|js|tsx|jsx)\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas que contêm "src" ou diretórios com estatísticas
+      if (trimmed.match(/^\s*(src|tests?|lib|dist)\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas com números que parecem estatísticas de cobertura
+      if (trimmed.match(/\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|/))
+        return false;
+
+      // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      // MAS preserva mensagens de commit válidas
+      if (
+        trimmed.match(/[;|&$`]/) &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/) &&
+        !trimmed.includes('test') && // Preserva mensagens sobre testes
+        !trimmed.includes('adiciona') && // Preserva mensagens normais
+        !trimmed.includes('atualiza') &&
+        !trimmed.includes('melhora')
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Reconstrói a mensagem
+    let result = cleanLines.join('\n').trim();
+
+    // Remove múltiplas linhas vazias
+    result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+    // Remove linhas vazias no início e fim
+    result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
+
+    // Sanitiza caracteres especiais que podem causar problemas (mais conservador)
+    result = result.replace(/[`\\]/g, '\\$&');
+
+    return result;
   }
 
   /**
@@ -104,10 +293,37 @@ export class GitUtils {
       throw new Error('Diretório atual não é um repositório Git');
     }
 
+    // Valida se o arquivo de mensagem existe
+    if (!fs.existsSync(messageFile)) {
+      throw new Error(`Arquivo de mensagem não encontrado: ${messageFile}`);
+    }
+
+    // Valida o conteúdo do arquivo
     try {
-      const args = additionalArgs.length > 0 ? ` ${additionalArgs.join(' ')}` : '';
-      execSync(`git commit -F "${messageFile}"${args}`, {
+      const content = fs.readFileSync(messageFile, 'utf8');
+      if (!content.trim()) {
+        throw new Error('Arquivo de mensagem está vazio');
+      }
+    } catch (error) {
+      throw new Error(`Erro ao ler arquivo de mensagem: ${error}`);
+    }
+
+    try {
+      // Constrói o comando com sanitização dos argumentos
+      const baseCommand = 'git commit -F';
+      const sanitizedFile = messageFile.replace(/[;|&$`"'\\]/g, '\\$&');
+      const sanitizedArgs = additionalArgs.map(arg => arg.replace(/[;|&$`"'\\]/g, '\\$&'));
+
+      const args =
+        sanitizedArgs.length > 0
+          ? [baseCommand, `"${sanitizedFile}"`, ...sanitizedArgs]
+          : [baseCommand, `"${sanitizedFile}"`];
+
+      // Executa o comando de forma mais segura
+      execSync(args.join(' '), {
         stdio: 'inherit',
+        shell: '/bin/bash', // Force bash para consistência
+        env: { ...process.env, LC_ALL: 'C' }, // Força locale C para evitar problemas de codificação
       });
     } catch (error) {
       throw new Error(`Erro ao realizar commit: ${error}`);

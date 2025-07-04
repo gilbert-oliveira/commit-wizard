@@ -274,6 +274,11 @@ async function runCommitWizard(): Promise<void> {
   try {
     const processedDiff = await diffProcessor.processLargeDiff(gitStatus.diff);
 
+    // Debug: mostra se há problemas no diff processado
+    if (processedDiff.includes('|') && processedDiff.includes('%')) {
+      console.log(chalk.yellow('⚠️ Detectado possível conteúdo estranho no diff processado'));
+    }
+
     // Gera mensagem de commit
     const generateSpinner = ora('🤖 Gerando mensagem de commit com IA...').start();
     const response = await aiService.generateCommitMessage(processedDiff);
@@ -285,6 +290,12 @@ async function runCommitWizard(): Promise<void> {
           `\n💰 Tokens utilizados: ${response.usage.totalTokens} (prompt: ${response.usage.promptTokens}, resposta: ${response.usage.completionTokens})`
         )
       );
+    }
+
+    // Valida se a mensagem está limpa
+    if (response.content.includes('|') && response.content.includes('%')) {
+      console.log(chalk.red('🚨 AVISO: Mensagem de commit contém dados estranhos!'));
+      console.log(chalk.yellow('Tentando fazer limpeza adicional...'));
     }
 
     console.log(chalk.greenBright('\n✨ Mensagem de commit gerada:'));

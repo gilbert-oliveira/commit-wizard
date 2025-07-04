@@ -5,53 +5,89 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [1.1.0] - 2024-01-XX
+## [1.2.2] - 2025-01-04
 
-### ✨ Adicionado
-- **🎯 Multi-Commit Inteligente**: Nova funcionalidade `--split` que divide automaticamente mudanças em múltiplos commits organizados por contexto
-- **Análise inteligente de contexto**: Detecção automática de tipo de arquivo (testes, docs, configuração, etc.)
-- **Agrupamento por relacionamento**: Arquivos relacionados são agrupados no mesmo commit
-- **Priorização automática**: Ordem inteligente (bugs → testes → docs → features)
-- **Timeout para API**: Timeout de 30 segundos para evitar travamentos
-- **Tratamento de interrupção**: Ctrl+C agora funciona com mensagens amigáveis
-- **Novos métodos GitUtils**: `getChangedFiles()`, `getFileDiff()`, `getStagedDiff()`
-- **Arquitetura modular**: Código refatorado em módulos especializados
-- **Sistema de configuração**: Suporte a arquivos `.commit-wizard.json` local e global
-- **Menu de configuração interativo**: `commit-wizard --config`
-- **Informações do sistema**: `commit-wizard --info`
-- **Suporte multilíngue**: Português e Inglês
-- **Múltiplos modelos de IA**: GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo
-- **Auto commit**: Opção para fazer commit automaticamente
-- **Análise de complexidade**: Estatísticas detalhadas do diff
-- **Detecção de breaking changes**: Identificação automática de mudanças incompatíveis
-- **Suporte a emojis**: Opção para incluir emojis nas mensagens
-- **Regeneração de mensagens**: Opção para gerar nova mensagem
-- **Cópia para clipboard**: Copiar mensagem sem fazer commit
-- **Informações de uso de tokens**: Exibição do consumo da API
-- **Testes unitários**: 63 testes com cobertura completa
-- **CI/CD**: GitHub Actions para testes e publicação
-- **Linting e formatação**: ESLint e Prettier configurados
-- **Documentação melhorada**: README expandido com exemplos
+### 🔒 Melhorias de Segurança e Robustez
 
-### 🔧 Melhorado
-- **Processamento de diffs grandes**: Divisão inteligente em chunks
-- **Tratamento de erros**: Mensagens mais informativas e recuperação gracosa
-- **Interface do usuário**: Menu interativo mais intuitivo
-- **Performance**: Processamento paralelo de chunks
-- **Compatibilidade**: Suporte aprimorado para diferentes ambientes
+#### Correções de Problemas de Execução
+- **Corrigido**: Erros de "command not found" durante execução de multi-commit
+- **Melhorado**: Sanitização de argumentos de comando para evitar injeção de código
+- **Melhorado**: Validação mais rigorosa de arquivos de mensagem de commit
 
-### 🐛 Corrigido
-- **Dependência faltante**: Adicionado `chalk` às dependências
-- **Shebang**: Corrigido para `#!/usr/bin/env node`
-- **Imports ESM**: Suporte aprimorado para módulos ES
-- **Encoding**: Melhor tratamento de caracteres especiais
+#### Melhorias nas Funções de Limpeza
+- **`cleanCommitMessage`**: Adiciona filtros para remover nomes de funções TypeScript e comandos shell
+- **`cleanApiResponse`**: Melhora filtros para evitar conteúdo problemático da API
+- **`cleanDiffOutput`**: Adiciona proteção contra conteúdo malicioso em diffs
 
-### 🚀 Tecnológico
-- **TypeScript**: Tipagem melhorada e mais rigorosa
-- **Módulos ES**: Migração completa para ESM
-- **Arquitetura**: Separação de responsabilidades em classes especializadas
-- **Configuração**: Sistema flexível de configuração por arquivo
-- **Testing**: Jest configurado com cobertura e mocks
+#### Melhorias na Execução de Comandos
+- **`commitWithFile`**: Adiciona validação de existência e conteúdo de arquivos
+- **Força shell `/bin/bash`**: Garante consistência entre diferentes ambientes
+- **Locale fixo `LC_ALL=C`**: Evita problemas de codificação
+- **Sanitização de argumentos**: Escapa caracteres especiais para evitar injeção
+
+#### Melhorias nos Testes
+- **Novos testes**: Validação de arquivos de mensagem inexistentes ou vazios
+- **Mocks aprimorados**: Melhor cobertura das funções de filesystem
+- **Testes de segurança**: Verificação de sanitização de argumentos
+
+### 🛡️ Segurança
+- Proteção contra injeção de comandos shell
+- Validação rigorosa de entrada de dados
+- Sanitização de argumentos de linha de comando
+- Filtros para remover conteúdo potencialmente perigoso
+
+### 🔧 Melhorias Técnicas
+- Melhor isolamento de processos
+- Manuseio mais robusto de erros
+- Validação de dados mais rigorosa
+- Execução de comandos mais segura
+
+## [1.2.1] - 2025-01-03
+
+### ✨ Recursos
+- Multi-commit inteligente com divisão por contexto
+- Limpeza automática de diffs e mensagens de commit
+- Validação de mensagens seguindo Conventional Commits
+
+### 🐛 Correções
+- Isolamento de streams para evitar contaminação de saída
+- Melhor tratamento de caracteres especiais em mensagens
+
+### 🔧 Melhorias
+- Arquivo temporário para mensagens de commit
+- Validação mais rigorosa de entrada
+- Melhor feedback para o usuário
+
+## [1.2.0] - 2025-01-02
+
+### ✨ Recursos
+- Suporte a múltiplos modelos de IA
+- Configuração de temperatura
+- Detecção de breaking changes
+- Análise de complexidade de diff
+
+### 🐛 Correções
+- Melhor tratamento de erros da API
+- Validação de configuração
+
+### 🔧 Melhorias
+- Interface de usuário aprimorada
+- Melhor documentação
+- Testes mais abrangentes
+
+## [1.1.0] - 2025-01-01
+
+### ✨ Recursos
+- Geração de commits com IA
+- Suporte a Conventional Commits
+- Configuração personalizável
+- Suporte a emojis
+
+### 🐛 Correções
+- Correções iniciais de bugs
+
+### 🔧 Melhorias
+- Implementação inicial
 
 ## [1.0.26] - 2023-XX-XX
 

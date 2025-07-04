@@ -1,9 +1,20 @@
 import { GitUtils } from '../src/git-utils';
 import { execSync } from 'child_process';
 
-// Mock do child_process
+// Mock do execSync
 jest.mock('child_process');
 const mockedExecSync = execSync as jest.MockedFunction<typeof execSync>;
+
+// Mock do fs
+jest.mock('fs', () => ({
+  writeFileSync: jest.fn(),
+  unlinkSync: jest.fn(),
+  existsSync: jest.fn(),
+  readFileSync: jest.fn(),
+}));
+
+import fs from 'fs';
+const mockedFs = fs as jest.Mocked<typeof fs>;
 
 describe('GitUtils', () => {
   let gitUtils: GitUtils;
@@ -11,6 +22,9 @@ describe('GitUtils', () => {
   beforeEach(() => {
     gitUtils = new GitUtils();
     jest.clearAllMocks();
+    // Configurações padrão para os mocks
+    mockedFs.existsSync.mockReturnValue(true);
+    mockedFs.readFileSync.mockReturnValue('test commit message');
   });
 
   describe('isGitRepository', () => {
@@ -100,9 +114,16 @@ describe('GitUtils', () => {
       
       gitUtils.commit('feat: add new feature');
       
+      // Agora usa commitWithFile com mais validações
+      expect(mockedFs.existsSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt');
+      expect(mockedFs.readFileSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt', 'utf8');
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "feat: add new feature"',
-        { stdio: 'inherit' }
+        'git commit -F "/tmp/commit-wizard-message.txt"',
+        expect.objectContaining({
+          stdio: 'inherit',
+          shell: '/bin/bash',
+          env: expect.objectContaining({ LC_ALL: 'C' })
+        })
       );
     });
 
@@ -111,9 +132,16 @@ describe('GitUtils', () => {
       
       gitUtils.commit('fix: resolve "quoted" issue');
       
+      // Agora usa commitWithFile com mais validações
+      expect(mockedFs.existsSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt');
+      expect(mockedFs.readFileSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt', 'utf8');
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "fix: resolve \\"quoted\\" issue"',
-        { stdio: 'inherit' }
+        'git commit -F "/tmp/commit-wizard-message.txt"',
+        expect.objectContaining({
+          stdio: 'inherit',
+          shell: '/bin/bash',
+          env: expect.objectContaining({ LC_ALL: 'C' })
+        })
       );
     });
 
@@ -122,10 +150,36 @@ describe('GitUtils', () => {
       
       gitUtils.commit('feat: new feature', ['--no-verify', '--author="Test <test@example.com>"']);
       
+      // Agora usa commitWithFile com mais validações e argumentos sanitizados
+      expect(mockedFs.existsSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt');
+      expect(mockedFs.readFileSync).toHaveBeenCalledWith('/tmp/commit-wizard-message.txt', 'utf8');
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "feat: new feature" --no-verify --author="Test <test@example.com>"',
-        { stdio: 'inherit' }
+        'git commit -F "/tmp/commit-wizard-message.txt" --no-verify --author=\\"Test <test@example.com>\\"',
+        expect.objectContaining({
+          stdio: 'inherit',
+          shell: '/bin/bash',
+          env: expect.objectContaining({ LC_ALL: 'C' })
+        })
       );
+    });
+
+    it('deve lançar erro quando arquivo de mensagem não existe', () => {
+      mockedExecSync.mockReturnValue(''); // isGitRepository
+      mockedFs.existsSync.mockReturnValue(false);
+      
+      expect(() => {
+        gitUtils.commit('feat: test');
+      }).toThrow('Arquivo de mensagem não encontrado');
+    });
+
+    it('deve lançar erro quando arquivo de mensagem está vazio', () => {
+      mockedExecSync.mockReturnValue(''); // isGitRepository
+      mockedFs.existsSync.mockReturnValue(true);
+      mockedFs.readFileSync.mockReturnValue('');
+      
+      expect(() => {
+        gitUtils.commit('feat: test');
+      }).toThrow('Arquivo de mensagem está vazio');
     });
   });
 

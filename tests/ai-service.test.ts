@@ -154,6 +154,120 @@ describe('AIService', () => {
     });
   });
 
+  describe('cleanApiResponse', () => {
+    it('deve remover dados de cobertura da resposta da API', async () => {
+      const dirtyResponse = `feat: adiciona nova funcionalidade
+
+Esta funcionalidade adiciona suporte para X
+---------------------|---------|----------|---------|---------|------------------------------
+File                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+---------------------|---------|----------|---------|---------|------------------------------
+All files            |   82.75 |    85.71 |      84 |      83 |
+ai-service.ts        |   89.74 |    78.26 |      75 |   94.59 | 161,167`;
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: dirtyResponse } }],
+          usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+        }),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await aiService.callOpenAI('test diff', 'commit');
+
+      expect(result.content).not.toContain('% Stmts');
+      expect(result.content).not.toContain('All files');
+      expect(result.content).not.toContain('ai-service.ts');
+      expect(result.content).not.toContain('161,167');
+      expect(result.content).toContain('feat: adiciona nova funcionalidade');
+      expect(result.content).toContain('Esta funcionalidade adiciona suporte para X');
+    });
+
+    it('deve remover blocos de código markdown', async () => {
+      const responseWithCode = `feat: adiciona nova funcionalidade
+
+\`\`\`typescript
+const test = 'code block';
+\`\`\`
+
+Esta funcionalidade adiciona suporte para X`;
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: responseWithCode } }],
+        }),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await aiService.callOpenAI('test diff', 'commit');
+
+      expect(result.content).not.toContain('```');
+      expect(result.content).not.toContain('const test = \'code block\';');
+      expect(result.content).toContain('feat: adiciona nova funcionalidade');
+      expect(result.content).toContain('Esta funcionalidade adiciona suporte para X');
+    });
+
+    it('deve lançar erro para resposta vazia', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: '' } }],
+        }),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(aiService.callOpenAI('test diff', 'commit')).rejects.toThrow('Resposta da API está vazia');
+    });
+
+    it('deve lançar erro para mensagem inválida após limpeza', async () => {
+      const invalidResponse = `
+---------------------|---------|----------|---------|---------|------------------------------
+File                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+---------------------|---------|----------|---------|---------|------------------------------
+All files            |   82.75 |    85.71 |      84 |      83 |`;
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: invalidResponse } }],
+        }),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(aiService.callOpenAI('test diff', 'commit')).rejects.toThrow('Mensagem de commit vazia após limpeza');
+    });
+
+    it('deve preservar mensagem de commit válida', async () => {
+      const validResponse = `feat: adiciona nova funcionalidade
+
+Esta funcionalidade adiciona suporte para autenticação OAuth2
+com integração ao Google e GitHub.
+
+BREAKING CHANGE: A API de autenticação foi alterada`;
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: validResponse } }],
+        }),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await aiService.callOpenAI('test diff', 'commit');
+
+      expect(result.content).toContain('feat: adiciona nova funcionalidade');
+      expect(result.content).toContain('OAuth2');
+      expect(result.content).toContain('BREAKING CHANGE');
+    });
+  });
+
   describe('generateSummary', () => {
     it('deve gerar resumo de chunk', async () => {
       const mockResponse = {
