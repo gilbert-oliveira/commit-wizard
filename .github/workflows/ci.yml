@@ -34,14 +34,12 @@ jobs:
       run: npm run format:check
       
     - name: Run tests
-      run: npm run test:coverage
+      run: npx jest --coverage
       
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
         
     - name: Build project
       run: npm run build
