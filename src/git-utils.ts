@@ -426,4 +426,49 @@ export class GitUtils {
     const status = this.getStagedStatus();
     return status.diff;
   }
+
+  /**
+   * Adiciona todos os arquivos ao stage
+   */
+  stageAll(): void {
+    if (!this.isGitRepository()) {
+      throw new Error('Diretório atual não é um repositório Git');
+    }
+
+    try {
+      execSync('git add .', { stdio: 'pipe' });
+    } catch (error) {
+      throw new Error(`Erro ao adicionar arquivos ao stage: ${error}`);
+    }
+  }
+
+  /**
+   * Reseta o stage (remove todos os arquivos do stage)
+   */
+  resetStage(): void {
+    if (!this.isGitRepository()) {
+      throw new Error('Diretório atual não é um repositório Git');
+    }
+
+    try {
+      execSync('git reset HEAD .', { stdio: 'pipe' });
+    } catch (error) {
+      throw new Error(`Erro ao resetar stage: ${error}`);
+    }
+  }
+
+  /**
+   * Adiciona um arquivo específico ao stage
+   */
+  stageFile(filePath: string): void {
+    if (!this.isGitRepository()) {
+      throw new Error('Diretório atual não é um repositório Git');
+    }
+
+    try {
+      execSync(`git add "${filePath}"`, { stdio: 'pipe' });
+    } catch (error) {
+      throw new Error(`Erro ao adicionar arquivo ao stage: ${error}`);
+    }
+  }
 }

@@ -4,8 +4,34 @@
 [![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/actions/workflows/ci.yml/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg?token=M74AR75FFD)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-blue.svg)](https://marketplace.visualstudio.com/items?itemName=gilbert_oliveira.commit-wizard)
 
 Gere mensagens de commit convencionais automaticamente com base nas alterações no código usando a API da OpenAI.
+
+**🆕 Agora disponível como extensão do VS Code!**
+
+## 🚀 Instalação
+
+### CLI (Linha de Comando)
+
+#### Global (Recomendado)
+```bash
+npm install -g @gilbert_oliveira/commit-wizard
+```
+
+#### Local
+```bash
+npm install @gilbert_oliveira/commit-wizard
+```
+
+### 🎨 Extensão VS Code
+
+1. Abra o VS Code
+2. Vá para Extensions (`Ctrl+Shift+X`)
+3. Pesquise por "Commit Wizard"
+4. Clique em "Install"
+
+📖 [Documentação completa da extensão](README-VSCODE.md)
 
 ## ✨ Funcionalidades
 
@@ -21,50 +47,7 @@ Gere mensagens de commit convencionais automaticamente com base nas alterações
 - 📋 **Cópia para clipboard**
 - 🎯 **Detecção de breaking changes**
 - 🧪 **Cobertura de testes** completa (63 testes)
-
-## 🚀 Instalação
-
-### Global (Recomendado)
-```bash
-npm install -g @gilbert_oliveira/commit-wizard
-```
-
-### Local
-```bash
-npm install @gilbert_oliveira/commit-wizard
-```
-
-## ⚙️ Configuração
-
-### 1. API Key da OpenAI
-Defina sua chave da OpenAI como variável de ambiente:
-
-```bash
-export OPENAI_API_KEY=sk-...
-```
-
-Adicione isso no seu `.bashrc`, `.zshrc` ou arquivo de ambiente equivalente.
-
-### 2. Configuração do Wizard
-Execute o comando de configuração para personalizar o comportamento:
-
-```bash
-commit-wizard --config
-```
-
-Ou crie um arquivo `.commit-wizard.json` no seu projeto ou diretório home:
-
-```json
-{
-  "model": "gpt-4o",
-  "temperature": 0.2,
-  "maxTokens": 1000,
-  "language": "pt",
-  "autoCommit": false,
-  "excludePatterns": ["*.lock*", "*.log", "node_modules/**"],
-  "includeEmoji": true
-}
-```
+- 🎨 **Extensão VS Code** com interface gráfica
 
 ## 🧠 Como Funciona
 

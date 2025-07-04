@@ -6,7 +6,33 @@ import prettier from 'eslint-plugin-prettier';
 export default [
   js.configs.recommended,
   {
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'coverage/**',
+      '*.vsix',
+      '*.log',
+      '~/.cursor/extensions/**',
+      '~/.vscode/extensions/**',
+      '.vscode/**',
+      '.git/**',
+      'package-lock.json',
+      '*.lock'
+    ]
+  },
+  {
     files: ['src/**/*.ts'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'coverage/**',
+      '*.vsix',
+      '*.log',
+      '~/.cursor/extensions/**',
+      '~/.vscode/extensions/**',
+      '.vscode/**',
+      '.git/**'
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {

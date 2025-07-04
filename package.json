@@ -1,11 +1,138 @@
 {
-  "name": "@gilbert_oliveira/commit-wizard",
-  "version": "1.2.2",
+  "name": "commit-wizard",
+  "displayName": "Commit Wizard",
+  "publisher": "gilbert_oliveira",
   "description": "🧙‍♂️ Gerador inteligente de mensagens de commit usando IA",
-  "main": "dist/index.js",
+  "version": "1.2.2",
+  "engines": {
+    "vscode": "^1.75.0",
+    "node": ">=18.0.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "main": "./dist/extension.js",
   "type": "module",
+  "packageManager": "npm@10.0.0",
   "bin": {
     "commit-wizard": "dist/index.js"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "commit-wizard.generate",
+        "title": "🧙‍♂️ Gerar Commit",
+        "category": "Commit Wizard"
+      },
+      {
+        "command": "commit-wizard.multiCommit",
+        "title": "🎯 Multi-Commit Inteligente",
+        "category": "Commit Wizard"
+      },
+      {
+        "command": "commit-wizard.config",
+        "title": "⚙️ Configurar",
+        "category": "Commit Wizard"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "commit-wizard.generate"
+        },
+        {
+          "command": "commit-wizard.multiCommit"
+        },
+        {
+          "command": "commit-wizard.config"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "commit-wizard.generate",
+          "when": "scmProvider == git",
+          "group": "navigation"
+        },
+        {
+          "command": "commit-wizard.multiCommit",
+          "when": "scmProvider == git",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Commit Wizard",
+      "properties": {
+        "commit-wizard.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API Key (também pode ser definida via OPENAI_API_KEY)",
+          "markdownDescription": "OpenAI API Key. Também pode ser definida via variável de ambiente `OPENAI_API_KEY`"
+        },
+        "commit-wizard.model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "enum": [
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-4-turbo",
+            "gpt-3.5-turbo"
+          ],
+          "description": "Modelo de IA para geração de commits"
+        },
+        "commit-wizard.language": {
+          "type": "string",
+          "default": "pt",
+          "enum": [
+            "pt",
+            "en"
+          ],
+          "description": "Idioma das mensagens de commit"
+        },
+        "commit-wizard.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Temperatura da IA (0.0 - 1.0)"
+        },
+        "commit-wizard.maxTokens": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 100,
+          "maximum": 4000,
+          "description": "Número máximo de tokens"
+        },
+        "commit-wizard.includeEmoji": {
+          "type": "boolean",
+          "default": true,
+          "description": "Incluir emojis nas mensagens de commit"
+        },
+        "commit-wizard.autoCommit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fazer commit automaticamente sem confirmação"
+        },
+        "commit-wizard.excludePatterns": {
+          "type": "array",
+          "default": [
+            "*.lock*",
+            "*.log",
+            "node_modules/**"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Padrões de arquivos para excluir da análise"
+        }
+      }
+    }
   },
   "publishConfig": {
     "access": "public"
@@ -14,6 +141,9 @@
     "start": "node dist/index.js",
     "dev": "tsc --watch",
     "build": "npm run lint && tsc",
+    "vscode:prepublish": "npm run build",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -23,7 +153,9 @@
     "format:check": "prettier --check src/**/*.ts",
     "prepare": "npm run build",
     "prepack": "npm run build",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "package": "./scripts/package-extension.sh",
+    "install-extension": "code --install-extension *.vsix"
   },
   "repository": {
     "type": "git",
@@ -42,19 +174,19 @@
     "git",
     "ai",
     "openai",
-    "gpt"
+    "gpt",
+    "vscode",
+    "extension",
+    "vscode-extension"
   ],
   "author": "Gilbert Oliveira <contato@gilbert.dev.br>",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/gilbert-oliveira/commit-wizard/issues"
   },
   "homepage": "https://github.com/gilbert-oliveira/commit-wizard#readme",
   "dependencies": {
-    "@types/node": "^22.14.1",
+    "@types/vscode": "^1.75.0",
     "chalk": "^5.3.0",
     "cli-progress": "^3.12.0",
     "gpt-tokenizer": "^1.0.0",
@@ -68,6 +200,7 @@
     "@types/cli-progress": "^3.11.6",
     "@types/inquirer": "^9.0.7",
     "@types/jest": "^29.5.12",
+    "@types/node": "^22.16.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
@@ -76,7 +209,8 @@
     "jest": "^29.7.0",
     "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.4.0",
+    "vsce": "^2.15.0"
   },
   "files": [
     "dist",
