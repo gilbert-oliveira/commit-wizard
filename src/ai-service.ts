@@ -204,6 +204,19 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
       // Remove linhas vazias
       if (!trimmed) return false;
 
+      // Remove linhas que contêm comandos shell potenciais ou nomes de funções
+      if (
+        trimmed.includes('cleanDiffOutput') ||
+        trimmed.includes('cleanCommitMessage') ||
+        trimmed.includes('cleanApiResponse') ||
+        trimmed.includes('AIService') ||
+        trimmed.includes('git-utils.test.ts') ||
+        trimmed.includes('execSync') ||
+        trimmed.includes('GitUtils')
+      ) {
+        return false;
+      }
+
       // Remove linhas que contêm tabelas de cobertura (mais rigoroso)
       if (
         trimmed.includes('|') &&
@@ -232,6 +245,21 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
       if (trimmed.match(/\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|/))
         return false;
 
+      // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      if (
+        trimmed.match(/[;|&$`]/) &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/)
+      ) {
+        return false;
+      }
+
+      // Remove linhas que parecem ser nomes de métodos ou classes TypeScript
+      if (
+        trimmed.match(/^(private|public|protected|static|class|interface|function|export|import)/)
+      ) {
+        return false;
+      }
+
       return true;
     });
 
@@ -243,6 +271,9 @@ RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
 
     // Remove linhas vazias no início e fim
     result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
+
+    // Sanitiza caracteres especiais que podem causar problemas
+    result = result.replace(/[`$\\]/g, '\\$&');
 
     // Valida se o resultado é uma mensagem de commit válida
     this.validateCommitMessage(result);

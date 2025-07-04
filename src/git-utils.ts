@@ -102,6 +102,19 @@ export class GitUtils {
       // Preserva linhas vazias (são importantes para estrutura do diff)
       if (!trimmed) return true;
 
+      // Remove linhas que contêm comandos shell potenciais ou nomes de funções
+      if (
+        trimmed.includes('cleanDiffOutput') ||
+        trimmed.includes('cleanCommitMessage') ||
+        trimmed.includes('cleanApiResponse') ||
+        trimmed.includes('AIService') ||
+        trimmed.includes('git-utils.test.ts') ||
+        trimmed.includes('execSync') ||
+        trimmed.includes('GitUtils')
+      ) {
+        return false;
+      }
+
       // Preserva linhas que são claramente parte do diff (headers e modificações)
       if (
         line.startsWith('diff ') ||
@@ -145,6 +158,11 @@ export class GitUtils {
 
       // Remove linhas com apenas caracteres de tabela
       if (trimmed.match(/^[\s\-|%]+$/) && trimmed.length > 5) return false;
+
+      // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      if (trimmed.match(/[;|&$`]/) && !trimmed.match(/^[+-].*[;|&$`]/)) {
+        return false;
+      }
 
       // Se chegou até aqui, preserva a linha
       return true;
@@ -195,6 +213,17 @@ export class GitUtils {
       // Remove linhas vazias
       if (!trimmed) return false;
 
+      // Remove linhas que contêm comandos shell potenciais
+      if (
+        trimmed.includes('cleanDiffOutput') ||
+        trimmed.includes('cleanCommitMessage') ||
+        trimmed.includes('cleanApiResponse') ||
+        trimmed.includes('AIService') ||
+        trimmed.includes('git-utils.test.ts')
+      ) {
+        return false;
+      }
+
       // Remove linhas que contêm tabelas de cobertura (mais rigoroso)
       if (
         trimmed.includes('|') &&
@@ -223,6 +252,14 @@ export class GitUtils {
       if (trimmed.match(/\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|/))
         return false;
 
+      // Remove linhas que contêm caracteres potencialmente perigosos para shell
+      if (
+        trimmed.match(/[;|&$`]/) &&
+        !trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)[:(]/)
+      ) {
+        return false;
+      }
+
       return true;
     });
 
@@ -235,6 +272,9 @@ export class GitUtils {
     // Remove linhas vazias no início e fim
     result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
 
+    // Sanitiza caracteres especiais que podem causar problemas
+    result = result.replace(/[`$\\]/g, '\\$&');
+
     return result;
   }
 
@@ -246,10 +286,37 @@ export class GitUtils {
       throw new Error('Diretório atual não é um repositório Git');
     }
 
+    // Valida se o arquivo de mensagem existe
+    if (!fs.existsSync(messageFile)) {
+      throw new Error(`Arquivo de mensagem não encontrado: ${messageFile}`);
+    }
+
+    // Valida o conteúdo do arquivo
     try {
-      const args = additionalArgs.length > 0 ? ` ${additionalArgs.join(' ')}` : '';
-      execSync(`git commit -F "${messageFile}"${args}`, {
+      const content = fs.readFileSync(messageFile, 'utf8');
+      if (!content.trim()) {
+        throw new Error('Arquivo de mensagem está vazio');
+      }
+    } catch (error) {
+      throw new Error(`Erro ao ler arquivo de mensagem: ${error}`);
+    }
+
+    try {
+      // Constrói o comando com sanitização dos argumentos
+      const baseCommand = 'git commit -F';
+      const sanitizedFile = messageFile.replace(/[;|&$`"'\\]/g, '\\$&');
+      const sanitizedArgs = additionalArgs.map(arg => arg.replace(/[;|&$`"'\\]/g, '\\$&'));
+
+      const args =
+        sanitizedArgs.length > 0
+          ? [baseCommand, `"${sanitizedFile}"`, ...sanitizedArgs]
+          : [baseCommand, `"${sanitizedFile}"`];
+
+      // Executa o comando de forma mais segura
+      execSync(args.join(' '), {
         stdio: 'inherit',
+        shell: '/bin/bash', // Force bash para consistência
+        env: { ...process.env, LC_ALL: 'C' }, // Força locale C para evitar problemas de codificação
       });
     } catch (error) {
       throw new Error(`Erro ao realizar commit: ${error}`);
