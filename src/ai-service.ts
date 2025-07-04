@@ -44,7 +44,10 @@ export class AIService {
 
     if (isPortuguese) {
       return `
-Por favor, escreva a mensagem de commit para este diff usando a convenção de Conventional Commits.
+Por favor, escreva APENAS a mensagem de commit para este diff usando a convenção de Conventional Commits.
+
+IMPORTANTE: Retorne SOMENTE a mensagem de commit, sem explicações, sem blocos de código, sem tabelas, sem dados extras.
+
 A mensagem deve começar com um tipo de commit, como:
   feat: para novas funcionalidades
   fix: para correções de bugs
@@ -66,11 +69,16 @@ Use sempre linguagem imperativa, como:
   - "remove arquivo"
 
 Mantenha a mensagem concisa mas informativa.
+
+RETORNE APENAS A MENSAGEM DE COMMIT, NADA MAIS.
 `;
     }
 
     return `
-Please write the commit message for this diff using the Conventional Commits convention.
+Please write ONLY the commit message for this diff using the Conventional Commits convention.
+
+IMPORTANT: Return ONLY the commit message, no explanations, no code blocks, no tables, no extra data.
+
 The message should start with a commit type, such as:
   feat: for new features
   fix: for bug fixes
@@ -92,6 +100,8 @@ Always use imperative language, such as:
   - "remove file"
 
 Keep the message concise but informative.
+
+RETURN ONLY THE COMMIT MESSAGE, NOTHING ELSE.
 `;
   }
 
@@ -145,8 +155,12 @@ Keep the message concise but informative.
 
       const data = await response.json();
 
+      // Limpa e valida a resposta
+      const rawContent = data.choices[0].message.content;
+      const cleanContent = this.cleanApiResponse(rawContent);
+
       return {
-        content: data.choices[0].message.content.trim().replace(/```/g, ''),
+        content: cleanContent,
         usage: data.usage
           ? {
               promptTokens: data.usage.prompt_tokens,
@@ -165,6 +179,111 @@ Keep the message concise but informative.
         throw error;
       }
       throw new Error(`Erro desconhecido ao chamar API: ${error}`);
+    }
+  }
+
+  /**
+   * Limpa a resposta da API removendo conteúdo inválido
+   */
+  private cleanApiResponse(content: string): string {
+    if (!content) {
+      throw new Error('Resposta da API está vazia');
+    }
+
+    // Remove blocos de código markdown
+    let cleaned = content.replace(/```[\s\S]*?```/g, '');
+
+    // Remove backticks isolados
+    cleaned = cleaned.replace(/```/g, '');
+
+    // Divide em linhas para limpeza linha por linha
+    const lines = cleaned.split('\n');
+    const cleanLines = lines.filter(line => {
+      const trimmed = line.trim();
+
+      // Remove linhas vazias
+      if (!trimmed) return false;
+
+      // Remove linhas que contêm tabelas de cobertura (mais rigoroso)
+      if (
+        trimmed.includes('|') &&
+        (trimmed.includes('%') || trimmed.includes('Stmts') || trimmed.includes('Branch'))
+      )
+        return false;
+      if (trimmed.match(/^[-|]+$/)) return false;
+      if (trimmed.includes('File') && trimmed.includes('Stmts')) return false;
+      if (trimmed.includes('All files') && trimmed.includes('|')) return false;
+      if (trimmed.includes('Uncovered Line')) return false;
+
+      // Remove linhas com apenas caracteres especiais/separadores
+      if (trimmed.match(/^[\s\-|%]+$/)) return false;
+
+      // Remove linhas que parecem output de ferramentas de cobertura
+      if (trimmed.includes('coverage') && trimmed.includes('|')) return false;
+      if (trimmed.includes('----') && trimmed.includes('|')) return false;
+
+      // Remove linhas que contêm nomes de arquivos com estatísticas (padrão específico)
+      if (trimmed.match(/\.(ts|js|tsx|jsx)\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas que contêm "src" ou diretórios com estatísticas
+      if (trimmed.match(/^\s*(src|tests?|lib|dist)\s*\|\s*\d+\.\d+/)) return false;
+
+      // Remove linhas com números que parecem estatísticas de cobertura
+      if (trimmed.match(/\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|/))
+        return false;
+
+      return true;
+    });
+
+    // Reconstrói o conteúdo
+    let result = cleanLines.join('\n').trim();
+
+    // Remove múltiplas linhas vazias
+    result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+    // Remove linhas vazias no início e fim
+    result = result.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
+
+    // Valida se o resultado é uma mensagem de commit válida
+    this.validateCommitMessage(result);
+
+    return result;
+  }
+
+  /**
+   * Valida se a mensagem de commit é válida
+   */
+  private validateCommitMessage(message: string): void {
+    if (!message || message.trim().length === 0) {
+      throw new Error('Mensagem de commit vazia após limpeza');
+    }
+
+    // Verifica se a mensagem tem pelo menos um tipo de commit válido
+    const validTypes = [
+      'feat',
+      'fix',
+      'docs',
+      'style',
+      'refactor',
+      'test',
+      'chore',
+      'perf',
+      'ci',
+      'build',
+    ];
+    const hasValidType = validTypes.some(
+      type =>
+        message.toLowerCase().includes(`${type}:`) || message.toLowerCase().includes(`${type}(`)
+    );
+
+    if (!hasValidType) {
+      console.warn('⚠️ Mensagem de commit não segue padrão Conventional Commits');
+    }
+
+    // Verifica se contém apenas caracteres válidos para commit
+    const invalidChars = /[^\w\s\-_.:()[\]{}!@#$%^&*+=~`|\\;'",<>/?áéíóúâêîôûàèìòùãõç]/g;
+    if (invalidChars.test(message)) {
+      console.warn('⚠️ Mensagem contém caracteres especiais que podem causar problemas');
     }
   }
 
