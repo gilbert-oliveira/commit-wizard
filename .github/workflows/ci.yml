@@ -34,7 +34,7 @@ jobs:
       run: npm run format:check
       
     - name: Run tests
-      run: npm run test:coverage
+      run: npx jest --coverage
       
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
