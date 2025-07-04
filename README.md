@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/%40gilbert_oliveira%2Fcommit-wizard.svg)](https://badge.fury.io/js/%40gilbert_oliveira%2Fcommit-wizard)
 [![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/actions/workflows/ci.yml/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
+[![codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg?token=M74AR75FFD)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Gere mensagens de commit convencionais automaticamente com base nas alterações no código usando a API da OpenAI.
