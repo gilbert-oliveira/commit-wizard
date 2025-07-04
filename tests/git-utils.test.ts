@@ -1,9 +1,15 @@
 import { GitUtils } from '../src/git-utils';
 import { execSync } from 'child_process';
 
-// Mock do child_process
+// Mock do execSync
 jest.mock('child_process');
 const mockedExecSync = execSync as jest.MockedFunction<typeof execSync>;
+
+// Mock do fs
+jest.mock('fs', () => ({
+  writeFileSync: jest.fn(),
+  unlinkSync: jest.fn(),
+}));
 
 describe('GitUtils', () => {
   let gitUtils: GitUtils;
@@ -100,8 +106,9 @@ describe('GitUtils', () => {
       
       gitUtils.commit('feat: add new feature');
       
+      // Agora usa commitWithFile, então verifica se foi chamado git commit -F
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "feat: add new feature"',
+        'git commit -F "/tmp/commit-wizard-message.txt"',
         { stdio: 'inherit' }
       );
     });
@@ -111,8 +118,9 @@ describe('GitUtils', () => {
       
       gitUtils.commit('fix: resolve "quoted" issue');
       
+      // Agora usa commitWithFile, então verifica se foi chamado git commit -F
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "fix: resolve \\"quoted\\" issue"',
+        'git commit -F "/tmp/commit-wizard-message.txt"',
         { stdio: 'inherit' }
       );
     });
@@ -122,8 +130,9 @@ describe('GitUtils', () => {
       
       gitUtils.commit('feat: new feature', ['--no-verify', '--author="Test <test@example.com>"']);
       
+      // Agora usa commitWithFile, então verifica se foi chamado git commit -F com argumentos
       expect(mockedExecSync).toHaveBeenCalledWith(
-        'git commit -m "feat: new feature" --no-verify --author="Test <test@example.com>"',
+        'git commit -F "/tmp/commit-wizard-message.txt" --no-verify --author="Test <test@example.com>"',
         { stdio: 'inherit' }
       );
     });
