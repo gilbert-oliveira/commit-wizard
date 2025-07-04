@@ -1,7 +1,7 @@
 {
   "name": "@gilbert_oliveira/commit-wizard",
-  "version": "1.2.1",
-  "description": "O **Commit Wizard** é uma ferramenta automatizada para geração de mensagens de commit com base na convenção de **Conventional Commits**. Ele ajuda a garantir que suas mensagens de commit sigam um padrão consistente e facilite a comunicação de mudanças no código.",
+  "version": "1.2.2",
+  "description": "🧙‍♂️ Gerador inteligente de mensagens de commit usando IA",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
