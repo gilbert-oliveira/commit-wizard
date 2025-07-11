@@ -116,7 +116,7 @@ jobs:
         run: bun install
 
       - name: Executar testes básicos
-        run: bun test --reporter=verbose
+        run: bun test
 
       - name: Testar build
         run: |
