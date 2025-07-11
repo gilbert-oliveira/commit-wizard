@@ -198,5 +198,5 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - **🤝 Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
-
 **Desenvolvido com ❤️ usando [Bun](https://bun.sh) e [GitHub Actions](https://github.com/features/actions)**
+

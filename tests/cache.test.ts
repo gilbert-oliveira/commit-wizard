@@ -1,13 +1,15 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+/// <reference types="jest" />
 import {
   initializeCache,
   getCachedAnalysis,
   setCachedAnalysis,
   clearCache,
   getCacheStats,
-} from '../src/core/cache.ts';
-import type { Config } from '../src/config/index.ts';
-import type { FileGroup } from '../src/core/smart-split.ts';
+} from '../src/core/cache';
+import type { Config } from '../src/config/index';
+import type { FileGroup } from '../src/core/smart-split';
+
+// Os métodos describe, it, expect, beforeEach já são globais no Jest
 
 describe('Cache Module', () => {
   const mockConfig: Config = {

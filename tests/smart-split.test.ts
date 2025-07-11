@@ -1,12 +1,17 @@
+/// <reference types="jest" />
 // Importar polyfill antes de qualquer outra coisa
 import '../src/utils/polyfill';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+// eslint-disable-next-line
+jest.mock('clipboardy');
+
 import {
   analyzeFileContext,
   generateGroupDiff,
-} from '../src/core/smart-split.ts';
-import type { Config } from '../src/config/index.ts';
+} from '../src/core/smart-split';
+import type { Config } from '../src/config/index';
+
+// Os métodos describe, it, expect, beforeEach já são globais no Jest
 
 describe('Smart Split', () => {
   beforeEach(() => {

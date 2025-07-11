@@ -1,7 +1,7 @@
+/// <reference types="jest" />
 // Importar polyfill antes de qualquer outra coisa
 import '../src/utils/polyfill';
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'bun:test';
-import { parseArgs } from '../src/utils/args.ts';
+/// <reference types="jest" />
+import { parseArgs } from '../src/utils/args';
 
 describe('Args Module', () => {
   describe('parseArgs', () => {

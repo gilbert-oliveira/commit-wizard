@@ -1,7 +1,7 @@
-import type { Config } from '../config/index.ts';
-import type { CLIArgs } from '../utils/args.ts';
-import { getCachedAnalysis, setCachedAnalysis } from './cache.ts';
-import { showCommitResult } from '../ui/index.ts';
+import type { Config } from '../config/index.js';
+import type { CLIArgs } from '../utils/args.js';
+import { getCachedAnalysis, setCachedAnalysis } from './cache.js';
+import { showCommitResult } from '../ui/index.js';
 import { log } from '@clack/prompts';
 
 export interface FileGroup {
@@ -189,7 +189,18 @@ export async function analyzeFileContext(
       };
     }
 
-    // Extrair JSON da resposta
+    // Log para debug
+    log.info(`📝 Resposta da OpenAI: ${content.substring(0, 200)}...`);
+
+    // Verificar se a resposta está completa
+    if (!content.includes('"groups"')) {
+      return {
+        success: false,
+        error: 'Resposta da OpenAI incompleta - JSON truncado',
+      };
+    }
+
+    // Extrair JSON da resposta - tentar diferentes padrões
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return {
@@ -198,7 +209,205 @@ export async function analyzeFileContext(
       };
     }
 
-    const analysis = JSON.parse(jsonMatch[0]);
+    // Verificar se o JSON está truncado (não termina com })
+    const extractedJson = jsonMatch[0];
+    const isTruncated = !extractedJson.trim().endsWith('}');
+    
+    if (isTruncated) {
+      log.warn('⚠️ JSON truncado detectado, usando análise baseada em diretórios');
+      
+      // Criar agrupamento baseado em diretórios como fallback
+      const groups = [];
+      const filesByDir = files.reduce((acc, file) => {
+        const dir = file.split('/').slice(0, -1).join('/') || 'root';
+        if (!acc[dir]) acc[dir] = [];
+        acc[dir].push(file);
+        return acc;
+      }, {} as Record<string, string[]>);
+      
+      let groupIndex = 1;
+      for (const [dir, dirFiles] of Object.entries(filesByDir)) {
+        if (dirFiles.length > 0) {
+          groups.push({
+            id: `fallback-group-${groupIndex}`,
+            name: dir === 'root' ? 'Arquivos Raiz' : `Arquivos ${dir}`,
+            description: `Arquivos do diretório ${dir === 'root' ? 'raiz' : dir}`,
+            files: dirFiles,
+            diff: '', // Será preenchido depois
+            confidence: 0.6
+          });
+          groupIndex++;
+        }
+      }
+      
+      // Armazenar no cache
+      setCachedAnalysis(files, overallDiff, groups);
+      
+      return {
+        success: true,
+        groups,
+      };
+    }
+
+    let analysis;
+    try {
+      analysis = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      log.error(`❌ Erro ao fazer parse do JSON: ${parseError}`);
+      log.error(`📄 JSON extraído: ${jsonMatch[0]}`);
+      
+      // Tentar completar o JSON se estiver truncado
+      let jsonStr = jsonMatch[0];
+      
+      // Se termina com vírgula, remover
+      if (jsonStr.endsWith(',')) {
+        jsonStr = jsonStr.slice(0, -1);
+      }
+      
+      // Se não termina com }, tentar completar
+      if (!jsonStr.endsWith('}')) {
+        // Contar chaves abertas e fechadas
+        const openBraces = (jsonStr.match(/\{/g) || []).length;
+        const closeBraces = (jsonStr.match(/\}/g) || []).length;
+        const openBrackets = (jsonStr.match(/\[/g) || []).length;
+        const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+        
+        // Completar com chaves/brackets faltantes
+        const missingBraces = openBraces - closeBraces;
+        const missingBrackets = openBrackets - closeBrackets;
+        
+        jsonStr += ']'.repeat(missingBrackets) + '}'.repeat(missingBraces);
+      }
+      
+      // Limpar caracteres problemáticos
+      const cleanedJson = jsonStr
+        .replace(/[^\x20-\x7E]/g, '') // Remove caracteres não-ASCII
+        .replace(/,\s*}/g, '}') // Remove vírgulas extras antes de }
+        .replace(/,\s*]/g, ']'); // Remove vírgulas extras antes de ]
+      
+      try {
+        analysis = JSON.parse(cleanedJson);
+      } catch (secondError) {
+        log.error(`❌ Segunda tentativa de parse também falhou: ${secondError}`);
+        
+        // Tentar uma abordagem mais robusta - extrair grupos usando regex mais específico
+        try {
+          log.warn('⚠️ Tentando extrair grupos do JSON truncado usando regex robusto');
+          
+          // Padrão mais robusto para extrair grupos completos
+          const groupPattern = /"id"\s*:\s*"([^"]*)"[^}]*"name"\s*:\s*"([^"]*)"[^}]*"description"\s*:\s*"([^"]*)"[^}]*"files"\s*:\s*\[([^\]]*)\][^}]*"confidence"\s*:\s*([0-9.]+)/g;
+          const matches = [...jsonStr.matchAll(groupPattern)];
+          
+          if (matches.length > 0) {
+            const groups = matches.map((match) => {
+              // Processar arquivos de forma mais robusta
+              const filesStr = match[4] || '';
+              const files = filesStr
+                .split(',')
+                .map((f: string) => f.trim().replace(/"/g, ''))
+                .filter((f: string) => f.length > 0 && !f.includes('...'));
+              
+              return {
+                id: match[1] || `group-${Math.random().toString(36).substr(2, 9)}`,
+                name: match[2] || 'Grupo sem nome',
+                description: match[3] || 'Sem descrição',
+                files: files,
+                confidence: parseFloat(match[5] || '0.7')
+              };
+            });
+            
+            // Verificar se todos os arquivos originais estão incluídos
+            const allGroupedFiles = groups.flatMap(g => g.files || []);
+            const missingFiles = files.filter(file => !allGroupedFiles.includes(file));
+            
+            // Adicionar arquivos faltantes ao primeiro grupo
+            if (missingFiles.length > 0 && groups.length > 0 && groups[0]) {
+              groups[0].files = [...(groups[0].files || []), ...missingFiles];
+            }
+            
+            analysis = { groups };
+          } else {
+            // Tentar uma abordagem mais simples - extrair apenas IDs e nomes
+            log.warn('⚠️ Tentando extração simplificada de grupos');
+            
+            const simpleGroupPattern = /"id"\s*:\s*"([^"]*)"[^}]*"name"\s*:\s*"([^"]*)"[^}]*"files"\s*:\s*\[([^\]]*)\]/g;
+            const simpleMatches = [...jsonStr.matchAll(simpleGroupPattern)];
+            
+                         if (simpleMatches.length > 0) {
+               const groups = simpleMatches.map((match, index) => {
+                 const filesStr = match[3] || '';
+                 const files = filesStr
+                   .split(',')
+                   .map((f: string) => f.trim().replace(/"/g, ''))
+                   .filter((f: string) => f.length > 0 && !f.includes('...'));
+                 
+                 return {
+                   id: match[1] || `simple-group-${index + 1}`,
+                   name: match[2] || `Grupo ${index + 1}`,
+                   description: `Grupo ${index + 1} extraído`,
+                   files: files,
+                   confidence: 0.7
+                 };
+               });
+              
+              // Verificar arquivos faltantes
+              const allGroupedFiles = groups.flatMap(g => g.files || []);
+              const missingFiles = files.filter(file => !allGroupedFiles.includes(file));
+              
+              if (missingFiles.length > 0 && groups.length > 0 && groups[0]) {
+                groups[0].files = [...(groups[0].files || []), ...missingFiles];
+              }
+              
+              analysis = { groups };
+            } else {
+              throw new Error('Não foi possível extrair grupos do JSON');
+            }
+          }
+        } catch {
+          log.warn('⚠️ Criando agrupamento manual devido a erro no JSON');
+          
+          // Criar agrupamento baseado em diretórios
+          const groups = [];
+          const filesByDir = files.reduce((acc, file) => {
+            const dir = file.split('/').slice(0, -1).join('/') || 'root';
+            if (!acc[dir]) acc[dir] = [];
+            acc[dir].push(file);
+            return acc;
+          }, {} as Record<string, string[]>);
+          
+          let groupIndex = 1;
+          for (const [dir, dirFiles] of Object.entries(filesByDir)) {
+            if (dirFiles.length > 0) {
+              groups.push({
+                id: `manual-group-${groupIndex}`,
+                name: dir === 'root' ? 'Arquivos Raiz' : `Arquivos ${dir}`,
+                description: `Arquivos do diretório ${dir === 'root' ? 'raiz' : dir}`,
+                files: dirFiles,
+                confidence: 0.5
+              });
+              groupIndex++;
+            }
+          }
+          
+          // Se não conseguiu agrupar por diretório, dividir em grupos simples
+          if (groups.length === 0) {
+            const filesPerGroup = Math.ceil(files.length / 3);
+            for (let i = 0; i < files.length; i += filesPerGroup) {
+              const groupFiles = files.slice(i, i + filesPerGroup);
+              groups.push({
+                id: `manual-group-${Math.floor(i / filesPerGroup) + 1}`,
+                name: `Grupo ${Math.floor(i / filesPerGroup) + 1}`,
+                description: `Arquivos ${i + 1}-${Math.min(i + filesPerGroup, files.length)}`,
+                files: groupFiles,
+                confidence: 0.5
+              });
+            }
+          }
+          
+          analysis = { groups };
+        }
+      }
+    }
 
     if (!analysis.groups || !Array.isArray(analysis.groups)) {
       return {
@@ -251,7 +460,7 @@ export async function analyzeFileContext(
  * Gera diff para um grupo de arquivos (otimizado para tokens)
  */
 export async function generateGroupDiff(group: FileGroup): Promise<string> {
-  const { getFileDiff } = await import('../git/index.ts');
+  const { getFileDiff } = await import('../git/index.js');
 
   const diffs = group.files
     .map((file) => {
@@ -417,19 +626,28 @@ export async function handleSmartSplitMode(
     return;
   }
 
-  if (!args.silent) {
-    log.success(`✅ ${analysis.groups.length} grupo(s) identificado(s):`);
-    analysis.groups.forEach((group, index) => {
-      log.info(
-        `  ${index + 1}. ${group.name} (${group.files.length} arquivo(s))`
-      );
-      log.info(`     📄 ${group.files.join(', ')}`);
-    });
-  }
+      if (!args.silent) {
+      log.success(`✅ ${analysis.groups.length} grupo(s) identificado(s):`);
+      analysis.groups.forEach((group, index) => {
+        log.info(
+          `  ${index + 1}. ${group.name} (${group.files.length} arquivo(s))`
+        );
+        
+        // Limitar exibição de arquivos para evitar quebra de layout
+        const maxFilesToShow = 8;
+        const filesToShow = group.files.slice(0, maxFilesToShow);
+        const remainingFiles = group.files.length - maxFilesToShow;
+        
+        const filesDisplay = filesToShow.join(', ');
+        const remainingText = remainingFiles > 0 ? ` (+${remainingFiles} mais)` : '';
+        
+        log.info(`     📄 ${filesDisplay}${remainingText}`);
+      });
+    }
 
   // Mostrar interface de Smart Split para o usuário decidir
   if (!args.yes && !args.silent) {
-    const { showSmartSplitGroups } = await import('../ui/smart-split.ts');
+    const { showSmartSplitGroups } = await import('../ui/smart-split.js');
     const userAction = await showSmartSplitGroups(analysis.groups);
 
     if (userAction.action === 'cancel') {
@@ -442,7 +660,7 @@ export async function handleSmartSplitMode(
     if (userAction.action === 'manual') {
       // Delegar para modo manual - re-executar com flag split
       const newArgs = { ...args, split: true, smartSplit: false };
-      const { main } = await import('./index.ts');
+      const { main } = await import('./index');
       await main(newArgs);
       return;
     }
@@ -473,7 +691,15 @@ export async function handleSmartSplitMode(
     if (!groupDiff) {
       if (!args.silent) {
         log.warn(`⚠️  Nenhum diff encontrado para o grupo: ${group.name}`);
-        log.info(`   📄 Arquivos: ${group.files.join(', ')}`);
+        
+        // Limitar exibição de arquivos
+        const maxFilesToShow = 5;
+        const filesToShow = group.files.slice(0, maxFilesToShow);
+        const remainingFiles = group.files.length - maxFilesToShow;
+        const filesDisplay = filesToShow.join(', ');
+        const remainingText = remainingFiles > 0 ? ` (+${remainingFiles} mais)` : '';
+        
+        log.info(`   📄 Arquivos: ${filesDisplay}${remainingText}`);
         log.info(
           `   💡 Possível causa: arquivos novos, deletados/recriados, ou sem mudanças`
         );
@@ -486,7 +712,7 @@ export async function handleSmartSplitMode(
       log.info(`🤖 Gerando commit para: ${group.name}`);
     }
 
-    const { generateWithRetry } = await import('./openai.ts');
+    const { generateWithRetry } = await import('./openai');
     const result = await generateWithRetry(groupDiff, config, group.files);
 
     if (!result.success) {
@@ -509,7 +735,15 @@ export async function handleSmartSplitMode(
     if (config.dryRun) {
       if (!args.silent) {
         log.info(`🔍 Dry Run - Grupo: ${group.name}`);
-        log.info(`📄 Arquivos: ${group.files.join(', ')}`);
+        
+        // Limitar exibição de arquivos
+        const maxFilesToShow = 5;
+        const filesToShow = group.files.slice(0, maxFilesToShow);
+        const remainingFiles = group.files.length - maxFilesToShow;
+        const filesDisplay = filesToShow.join(', ');
+        const remainingText = remainingFiles > 0 ? ` (+${remainingFiles} mais)` : '';
+        
+        log.info(`📄 Arquivos: ${filesDisplay}${remainingText}`);
         log.info(`💭 Mensagem: "${result.suggestion.message}"`);
       }
       continue;
@@ -518,7 +752,7 @@ export async function handleSmartSplitMode(
     // Interface do usuário
     if (args.yes) {
       // Modo automático
-      const { executeFileCommit } = await import('../git/index.ts');
+      const { executeFileCommit } = await import('../git/index');
       let commitResult;
 
       // Fazer commit apenas dos arquivos do grupo atual
@@ -531,7 +765,7 @@ export async function handleSmartSplitMode(
         // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
         const { execSync } = await import('child_process');
         // Importar função de escape do módulo git
-        const { escapeShellArg } = await import('../git/index.ts');
+        const { escapeShellArg } = await import('../git/index');
         try {
           // Fazer commit apenas dos arquivos do grupo
           const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -576,13 +810,13 @@ export async function handleSmartSplitMode(
         editCommitMessage,
         copyToClipboard,
         showCancellation,
-      } = await import('../ui/index.ts');
+      } = await import('../ui/index');
 
       const uiAction = await showCommitPreview(result.suggestion);
 
       switch (uiAction.action) {
         case 'commit': {
-          const { executeFileCommit } = await import('../git/index.ts');
+          const { executeFileCommit } = await import('../git/index');
           let commitResult;
 
           // Fazer commit apenas dos arquivos do grupo atual
@@ -594,7 +828,7 @@ export async function handleSmartSplitMode(
             // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
             const { execSync } = await import('child_process');
             // Importar função de escape do módulo git
-            const { escapeShellArg } = await import('../git/index.ts');
+            const { escapeShellArg } = await import('../git/index');
             try {
               // Fazer commit apenas dos arquivos do grupo
               const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -633,7 +867,7 @@ export async function handleSmartSplitMode(
         case 'edit': {
           const editAction = await editCommitMessage(result.suggestion.message);
           if (editAction.action === 'commit' && editAction.message) {
-            const { executeFileCommit } = await import('../git/index.ts');
+            const { executeFileCommit } = await import('../git/index');
             let editCommitResult;
 
             // Fazer commit apenas dos arquivos do grupo atual
@@ -646,7 +880,7 @@ export async function handleSmartSplitMode(
               // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
               const { execSync } = await import('child_process');
               // Importar função de escape do módulo git
-              const { escapeShellArg } = await import('../git/index.ts');
+              const { escapeShellArg } = await import('../git/index');
               try {
                 // Fazer commit apenas dos arquivos do grupo
                 const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -703,7 +937,7 @@ export async function handleSmartSplitMode(
 
     // Perguntar se quer continuar (exceto em modo automático)
     if (i < analysis.groups.length - 1 && !args.yes) {
-      const { askContinueCommits } = await import('../ui/index.ts');
+      const { askContinueCommits } = await import('../ui/index');
       const remainingGroups = analysis.groups
         .slice(i + 1)
         .filter((g) => g !== undefined)

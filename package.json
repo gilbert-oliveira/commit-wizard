@@ -8,40 +8,34 @@
     "Other",
     "SCM Providers"
   ],
-  "main": "dist/commit-wizard.js",
-  "module": "index.ts",
+  "main": "dist-node/commit-wizard.js",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/commit-wizard.js",
-    "commit-wizard-node": "./bin/commit-wizard-node.js"
+    "commit-wizard": "./bin/commit-wizard.js"
   },
   "scripts": {
-    "dev": "bun run bin/commit-wizard.ts",
-    "dev:node": "node bin/commit-wizard-node.js",
-    "build": "bun build bin/commit-wizard.ts --outdir=dist --target=bun --minify",
+    "dev": "node bin/commit-wizard.js",
+    "clean": "rm -rf dist-node",
+    "build": "npm run clean && npm run build:node",
     "build:node": "tsc --project tsconfig.node.json",
-    "test": "bun test",
-    "test:node": "node --test tests/",
-    "test:watch": "bun test --watch",
-    "test:coverage": "bun test && node scripts/generate-lcov.js",
-    "test:coverage:report": "bun test --coverage && open coverage/lcov-report/index.html",
-    "prepublishOnly": "bun run build && bun test",
-    "start": "bun run bin/commit-wizard.ts",
-    "start:node": "node bin/commit-wizard-node.js",
-    "ci:test": "bun test --reporter=verbose",
-    "ci:test:node": "node --test tests/",
-    "ci:build": "bun run build",
-    "ci:build:node": "npm run build:node",
-    "ci:lint": "bun run tsc --noEmit",
-    "ci:security": "bun audit",
-    "ci:integration": "bun test tests/integration.test.ts tests/smart-split.test.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:report": "jest --coverage && open coverage/lcov-report/index.html",
+    "prepublishOnly": "npm run build && npm test",
+    "start": "node bin/commit-wizard.js",
+    "ci:test": "jest --verbose",
+    "ci:build": "npm run build:node",
+    "ci:lint": "tsc --noEmit",
+    "ci:security": "npm audit",
+    "ci:integration": "jest tests/integration.test.ts tests/smart-split.test.ts",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
     "check-changes": "node -e \"const { execSync } = require('child_process'); const changed = execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).includes('package.json') || execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).match(/(src|bin|scripts|dist)/\\.*/); console.log(changed ? '🚀 Mudanças detectadas - deploy recomendado!' : '⚠️ Nenhuma mudança significativa detectada'); process.exit(changed ? 0 : 1);\"",
-    "type-check": "bun run tsc --noEmit",
-    "lint": "bun run eslint --fix",
-    "format": "bun run prettier --write ."
+    "type-check": "tsc --noEmit",
+    "lint": "eslint --fix .",
+    "format": "prettier --write ."
   },
   "keywords": [
     "git",
@@ -63,13 +57,11 @@
   },
   "homepage": "https://github.com/gilbert-oliveira/commit-wizard#readme",
   "engines": {
-    "node": ">=18.0.0",
-    "bun": ">=1.0.0"
+    "node": ">=18.0.0"
   },
   "files": [
     "bin/",
     "src/",
-    "dist/",
     "dist-node/",
     "README.md",
     "LICENSE",
@@ -78,18 +70,21 @@
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "clipboardy": "^4.0.0",
-    "simple-git": "^3.25.0",
-    "dotenv": "^17.2.0"
+    "dotenv": "^17.2.0",
+    "simple-git": "^3.25.0"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/jest": "^29.5.12",
     "@types/node": "^24.0.13",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
-
     "chalk": "^5.3.0",
     "eslint": "^9.30.1",
-    "prettier": "^3.6.2"
+    "jest": "^29.7.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"

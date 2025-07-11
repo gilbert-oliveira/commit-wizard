@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'bun:test';
+/// <reference types="jest" />
 import {
   buildPrompt,
   extractCommitTypeFromMessage,
   detectCommitType,
   processOpenAIMessage,
-} from '../src/core/openai.ts';
-import type { Config } from '../src/config/index.ts';
+} from '../src/core/openai';
+import type { Config } from '../src/config/index';
+
+// Os métodos describe, it, expect já são globais no Jest
 
 describe('OpenAI Module', () => {
   const mockConfig: Config = {

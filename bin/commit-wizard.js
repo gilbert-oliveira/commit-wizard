@@ -1,8 +1,8 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { intro, outro, log } from '@clack/prompts';
-import { main } from '../src/core/index.ts';
-import { parseArgs, showHelp, showVersion } from '../src/utils/args.ts';
+import { main } from '../dist-node/src/core/index.js';
+import { parseArgs, showHelp, showVersion } from '../dist-node/src/utils/args.js';
 
 async function run() {
   try {
@@ -46,6 +46,7 @@ async function run() {
   }
 }
 
-if (import.meta.main) {
+// Verificar se o arquivo está sendo executado diretamente
+if (import.meta.url === `file://${process.argv[1]}`) {
   run();
-}
+} 

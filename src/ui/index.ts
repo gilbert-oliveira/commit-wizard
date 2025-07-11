@@ -7,8 +7,7 @@ import {
   cancel,
   isCancel,
 } from '@clack/prompts';
-import clipboardy from 'clipboardy';
-import type { CommitSuggestion } from '../core/openai.ts';
+import type { CommitSuggestion } from '../core/openai';
 
 export interface UIAction {
   action: 'commit' | 'edit' | 'copy' | 'cancel';
@@ -104,7 +103,8 @@ export async function editCommitMessage(
  */
 export async function copyToClipboard(message: string): Promise<boolean> {
   try {
-    await clipboardy.write(message);
+    const clipboardy = await import('clipboardy');
+    await clipboardy.default.write(message);
     log.success('✅ Mensagem copiada para a área de transferência!');
     return true;
   } catch (error) {

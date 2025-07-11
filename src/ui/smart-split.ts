@@ -1,5 +1,5 @@
 import { select, confirm, log, note, isCancel } from '@clack/prompts';
-import type { FileGroup } from '../core/smart-split.ts';
+import type { FileGroup } from '../core/smart-split.js';
 
 export interface SmartSplitAction {
   action: 'proceed' | 'manual' | 'cancel';
@@ -52,17 +52,26 @@ export async function chooseSplitMode(): Promise<SmartSplitAction> {
 export async function showSmartSplitGroups(
   groups: FileGroup[]
 ): Promise<SmartSplitAction> {
+  // Criar uma versão mais compacta da exibição para evitar quebra de layout
+  const groupsDisplay = groups
+    .map((group, index) => {
+      // Limitar o número de arquivos exibidos para evitar quebra de layout
+      const maxFilesToShow = 5;
+      const filesToShow = group.files.slice(0, maxFilesToShow);
+      const remainingFiles = group.files.length - maxFilesToShow;
+      
+      const filesDisplay = filesToShow.join(', ');
+      const remainingText = remainingFiles > 0 ? ` (+${remainingFiles} mais)` : '';
+      
+      return `${index + 1}. **${group.name}** (${group.files.length} arquivo(s))\n` +
+             `   📄 ${filesDisplay}${remainingText}\n` +
+             `   💡 ${group.description}\n` +
+             `   🎯 Confiança: ${Math.round(group.confidence * 100)}%`;
+    })
+    .join('\n\n');
+
   note(
-    `Identificamos ${groups.length} grupo(s) lógico(s) para seus commits:\n\n` +
-      groups
-        .map(
-          (group, index) =>
-            `${index + 1}. **${group.name}**\n` +
-            `   📄 ${group.files.join(', ')}\n` +
-            `   💡 ${group.description}\n` +
-            `   🎯 Confiança: ${Math.round(group.confidence * 100)}%`
-        )
-        .join('\n\n'),
+    `Identificamos ${groups.length} grupo(s) lógico(s) para seus commits:\n\n${groupsDisplay}`,
     '🧠 Análise de Contexto'
   );
 

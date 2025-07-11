@@ -22,6 +22,10 @@
     // Code quality
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Adicionado para Jest
+    "types": ["jest"],
+    "esModuleInterop": true
   }
 }

@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+/// <reference types="jest" />
 import {
   loadConfig,
   validateConfig,
   type Config,
-} from '../src/config/index.ts';
+} from '../src/config/index';
 import { unlinkSync, existsSync } from 'fs';
+
+// Os métodos describe, it, expect, beforeEach, afterEach já são globais no Jest
 
 describe('Config Module', () => {
   // Usar um caminho temporário mais seguro

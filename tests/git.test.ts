@@ -1,7 +1,7 @@
 // Importar polyfill antes de qualquer outra coisa
 import '../src/utils/polyfill';
 
-import { describe, it, expect } from 'bun:test';
+// Os métodos describe, it, expect já são globais no Jest
 
 describe('Git Functions - Escape de Caracteres Especiais', () => {
   describe('Função escapeShellArg', () => {
