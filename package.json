@@ -71,7 +71,7 @@
     "@clack/prompts": "^0.7.0",
     "clipboardy": "^4.0.0",
     "simple-git": "^3.25.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^17.2.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
