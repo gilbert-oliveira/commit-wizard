@@ -105,36 +105,43 @@ describe('Smart Split', () => {
 
   describe('Escape de caracteres especiais em mensagens de commit', () => {
     it('deve escapar aspas duplas corretamente na mensagem de commit', () => {
-      const messageWithDoubleQuotes = 'feat: adicionar função "isPermitido" para validação';
-      const expectedEscaped = 'feat: adicionar função \\"isPermitido\\" para validação';
-      
+      const messageWithDoubleQuotes =
+        'feat: adicionar função "isPermitido" para validação';
+      const expectedEscaped =
+        'feat: adicionar função \\"isPermitido\\" para validação';
+
       // Simular a função de escape usada no código
       const escaped = messageWithDoubleQuotes.replace(/"/g, '\\"');
       expect(escaped).toBe(expectedEscaped);
     });
 
     it('deve escapar aspas simples corretamente na mensagem de commit', () => {
-      const messageWithSingleQuotes = "feat: adicionar validação no método 'EntregaService'";
-      const expectedResult = "feat: adicionar validação no método 'EntregaService'";
-      
+      const messageWithSingleQuotes =
+        "feat: adicionar validação no método 'EntregaService'";
+      const expectedResult =
+        "feat: adicionar validação no método 'EntregaService'";
+
       // Aspas simples não precisam ser escapadas no comando git
       const result = messageWithSingleQuotes.replace(/"/g, '\\"');
       expect(result).toBe(expectedResult);
     });
 
     it('deve escapar crases corretamente na mensagem de commit', () => {
-      const messageWithBackticks = 'feat: adicionar comando `git status` no helper';
+      const messageWithBackticks =
+        'feat: adicionar comando `git status` no helper';
       const expectedResult = 'feat: adicionar comando `git status` no helper';
-      
+
       // Crases também não precisam ser escapadas especificamente para aspas duplas
       const result = messageWithBackticks.replace(/"/g, '\\"');
       expect(result).toBe(expectedResult);
     });
 
     it('deve escapar múltiplos tipos de aspas na mesma mensagem', () => {
-      const messageWithMixedQuotes = 'feat: adicionar função "isValid" que usa \'strict\' mode e comando `exec`';
-      const expectedEscaped = 'feat: adicionar função \\"isValid\\" que usa \'strict\' mode e comando `exec`';
-      
+      const messageWithMixedQuotes =
+        'feat: adicionar função "isValid" que usa \'strict\' mode e comando `exec`';
+      const expectedEscaped =
+        'feat: adicionar função \\"isValid\\" que usa \'strict\' mode e comando `exec`';
+
       const escaped = messageWithMixedQuotes.replace(/"/g, '\\"');
       expect(escaped).toBe(expectedEscaped);
     });
@@ -146,15 +153,18 @@ describe('Smart Split', () => {
     });
 
     it('deve processar mensagem sem aspas sem modificação', () => {
-      const normalMessage = 'feat: adicionar nova funcionalidade de autenticacao';
+      const normalMessage =
+        'feat: adicionar nova funcionalidade de autenticacao';
       const escaped = normalMessage.replace(/"/g, '\\"');
       expect(escaped).toBe(normalMessage);
     });
 
     it('deve escapar aspas duplas consecutivas', () => {
-      const messageWithConsecutiveQuotes = 'feat: adicionar parsing de ""valor vazio""';
-      const expectedEscaped = 'feat: adicionar parsing de \\"\\"valor vazio\\"\\"';
-      
+      const messageWithConsecutiveQuotes =
+        'feat: adicionar parsing de ""valor vazio""';
+      const expectedEscaped =
+        'feat: adicionar parsing de \\"\\"valor vazio\\"\\"';
+
       const escaped = messageWithConsecutiveQuotes.replace(/"/g, '\\"');
       expect(escaped).toBe(expectedEscaped);
     });
@@ -162,7 +172,7 @@ describe('Smart Split', () => {
     it('deve escapar aspas no início e fim da mensagem', () => {
       const messageWithEdgeQuotes = '"feat: nova funcionalidade importante"';
       const expectedEscaped = '\\"feat: nova funcionalidade importante\\"';
-      
+
       const escaped = messageWithEdgeQuotes.replace(/"/g, '\\"');
       expect(escaped).toBe(expectedEscaped);
     });
@@ -171,7 +181,7 @@ describe('Smart Split', () => {
       const filename = 'src/test.ts';
       const message = 'feat: adicionar função "isValid" no service';
       const expectedCommand = `git commit "${filename}" -m "feat: adicionar função \\"isValid\\" no service"`;
-      
+
       const actualCommand = `git commit "${filename}" -m "${message.replace(/"/g, '\\"')}"`;
       expect(actualCommand).toBe(expectedCommand);
     });
@@ -181,7 +191,7 @@ describe('Smart Split', () => {
       const message = 'feat: implementar "SmartValidation" nos componentes';
       const filesArg = files.map((f) => `"${f}"`).join(' ');
       const expectedCommand = `git commit ${filesArg} -m "feat: implementar \\"SmartValidation\\" nos componentes"`;
-      
+
       const actualCommand = `git commit ${filesArg} -m "${message.replace(/"/g, '\\"')}"`;
       expect(actualCommand).toBe(expectedCommand);
     });
