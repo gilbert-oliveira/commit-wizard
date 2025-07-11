@@ -1,9 +1,13 @@
 # commit-wizard
 
-[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
-[![Security](https://github.com/gilbert-oliveira/commit-wizard/workflows/Segurança%20e%20Análise%20de%20Código/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
-[![Deploy](https://github.com/gilbert-oliveira/commit-wizard/workflows/Deploy%20e%20Testes%20de%20Ambiente/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
-[![npm version](https://badge.fury.io/js/commit-wizard.svg)](https://badge.fury.io/js/commit-wizard)
+> **📋 Guia para Contribuidores e Desenvolvedores**
+>
+> Este README é focado em informações técnicas, CI/CD e desenvolvimento. Para documentação completa do produto, veja o [README principal](../README.md).
+
+[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![Security](https://github.com/gilbert-oliveira/commit-wizard/workflows/Segurança/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![Deploy](https://github.com/gilbert-oliveira/commit-wizard/workflows/Deploy/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-1.0.0-000000?style=flat&logo=bun)](https://bun.sh)
 
@@ -36,13 +40,13 @@
 
 ```bash
 # Via npm
-npm install -g commit-wizard
+npm install -g @gilbert_oliveira/commit-wizard
 
 # Via npx
-npx commit-wizard
+npx @gilbert_oliveira/commit-wizard
 
 # Via bun
-bun add -g commit-wizard
+bun add -g @gilbert_oliveira/commit-wizard
 ```
 
 ## 🔧 Desenvolvimento
@@ -150,7 +154,8 @@ bun run release:major # Release major
 
 ### Próximas Funcionalidades
 
-- [ ] Cache inteligente para análises
+- [x] Cache inteligente para análises ✅ **Concluído**
+- [ ] Interface de edição de grupos (Smart Split)
 - [ ] Integração com mais IDEs
 - [ ] Templates customizados
 - [ ] Análise de impacto
@@ -186,11 +191,11 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🔗 Links
 
-- **Documentação**: [README.md](../README.md)
-- **Issues**: [GitHub Issues](https://github.com/gilbert-oliveira/commit-wizard/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/gilbert-oliveira/commit-wizard/discussions)
-- **Security**: [Security Policy](SECURITY.md)
-- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **📖 Documentação Principal**: [README.md](../README.md) - Guia completo para usuários
+- **🐛 Issues**: [GitHub Issues](https://github.com/gilbert-oliveira/commit-wizard/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/gilbert-oliveira/commit-wizard/discussions)
+- **🛡️ Security**: [Security Policy](SECURITY.md)
+- **🤝 Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 

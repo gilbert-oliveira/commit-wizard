@@ -2,9 +2,11 @@
 
 > **Gere mensagens de commit inteligentes usando IA**
 
-[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI%2FCD/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![Security](https://github.com/gilbert-oliveira/commit-wizard/workflows/Segurança/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![Deploy](https://github.com/gilbert-oliveira/commit-wizard/workflows/Deploy/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![Codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
-[![npm version](https://img.shields.io/npm/v/@gilbert-oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert-oliveira/commit-wizard)
+[![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
@@ -436,6 +438,7 @@ MIT © [Gilbert Oliveira](https://github.com/gilbert-oliveira)
 - [Documentação da OpenAI](https://platform.openai.com/docs)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 - [Bun.js](https://bun.sh/)
+- [📋 Guia para Contribuidores](.github/README.md) - Informações sobre desenvolvimento e CI/CD
 
 ---
 
