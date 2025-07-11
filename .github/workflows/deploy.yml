@@ -1,12 +1,13 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_run:
     workflows: ["CI"]
     types: [completed]
     branches: [main]
+
+permissions:
+  contents: write
 
 env:
   BUN_VERSION: '1.2.13'
@@ -15,7 +16,7 @@ jobs:
   publish:
     name: Publicar no NPM
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    if: github.event.workflow_run.conclusion == 'success'
     
     steps:
     - name: Checkout código
@@ -147,7 +148,7 @@ jobs:
         cp -r dist/ release/
         cp package.json README.md LICENSE release/
         
-        cd release && sha256sum * > checksums.txt
+        cd release && find . -type f -exec sha256sum {} \; > checksums.txt
         echo "✅ Artefatos preparados"
       shell: bash
 
