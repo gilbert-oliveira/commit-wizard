@@ -579,7 +579,7 @@ export async function handleSmartSplitMode(
               // Fazer commit apenas dos arquivos do grupo
               const filesArg = group.files.map((f) => `"${f}"`).join(' ');
               execSync(
-                `git commit ${filesArg} -m "${commitMessage.replace(/"/g, '"')}"`,
+                `git commit ${filesArg} -m "${commitMessage.replace(/"/g, '\\"')}"`,
                 {
                   stdio: 'pipe',
                 }
@@ -628,7 +628,7 @@ export async function handleSmartSplitMode(
                 // Fazer commit apenas dos arquivos do grupo
                 const filesArg = group.files.map((f) => `"${f}"`).join(' ');
                 execSync(
-                  `git commit ${filesArg} -m "${(editAction.message || '').replace(/"/g, '"')}"`,
+                  `git commit ${filesArg} -m "${(editAction.message || '').replace(/"/g, '\\"')}"`,
                   {
                     stdio: 'pipe',
                   }
