@@ -145,3 +145,6 @@ temp/
 # Commit Wizard specific
 .commit-wizardrc.local
 .commit-wizard-history.json
+
+# Docs AI
+docs_ai/
