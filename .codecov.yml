@@ -29,9 +29,6 @@ comment:
   require_changes: false
 
 ignore:
-  - 'tests/'
-  - '**/*.test.ts'
-  - '**/*.test.js'
   - 'bin/'
   - 'dist/'
   - 'scripts/'
