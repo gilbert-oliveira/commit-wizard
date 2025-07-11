@@ -2,7 +2,7 @@
 
 /**
  * Script para gerar arquivo lcov.info básico
- * Isso resolve o problema do c8 não funcionar bem com Bun
+ * Usado para gerar relatórios de cobertura compatíveis com Bun
  */
 
 import fs from 'fs';
