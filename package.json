@@ -68,7 +68,7 @@
     ".commit-wizardrc"
   ],
   "dependencies": {
-    "@clack/prompts": "^0.7.0",
+    "@clack/prompts": "^0.11.0",
     "clipboardy": "^4.0.0",
     "simple-git": "^3.25.0",
     "dotenv": "^17.2.0"
