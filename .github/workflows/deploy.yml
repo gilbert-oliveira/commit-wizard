@@ -120,7 +120,7 @@ jobs:
               
               ## Instalação
               \`\`\`bash
-              npm install -g commit-wizard
+              bun install -g @gilbert-oliveira/commit-wizard
               \`\`\`
               
               ## Como usar

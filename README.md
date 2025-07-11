@@ -4,7 +4,7 @@
 
 [![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI%2FCD/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![Codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
-[![npm version](https://img.shields.io/npm/v/commit-wizard.svg)](https://www.npmjs.com/package/commit-wizard)
+[![npm version](https://img.shields.io/npm/v/@gilbert-oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert-oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
@@ -64,13 +64,13 @@ Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagen
 ### Instalação Global
 
 ```bash
-bun install -g commit-wizard
+bun install -g @gilbert-oliveira/commit-wizard
 ```
 
 ### Uso via npx (sem instalação)
 
 ```bash
-npx commit-wizard
+npx @gilbert-oliveira/commit-wizard
 ```
 
 ---
