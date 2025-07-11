@@ -64,13 +64,13 @@ Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagen
 ### Instalação Global
 
 ```bash
-bun install -g @gilbert-oliveira/commit-wizard
+bun install -g @gilbert_oliveira/commit-wizard
 ```
 
 ### Uso via npx (sem instalação)
 
 ```bash
-npx @gilbert-oliveira/commit-wizard
+npx @gilbert_oliveira/commit-wizard
 ```
 
 ---

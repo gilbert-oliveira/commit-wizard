@@ -1,5 +1,5 @@
 {
-  "name": "@gilbert-oliveira/commit-wizard",
+  "name": "@gilbert_oliveira/commit-wizard",
   "displayName": "Commit Wizard",
   "publisher": "gilbert-oliveira",
   "description": "CLI inteligente para gerar mensagens de commit usando OpenAI",

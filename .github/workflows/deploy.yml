@@ -120,7 +120,7 @@ jobs:
               
               ## Instalação
               \`\`\`bash
-              bun install -g @gilbert-oliveira/commit-wizard
+              bun install -g @gilbert_oliveira/commit-wizard
               \`\`\`
               
               ## Como usar
