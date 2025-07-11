@@ -2,7 +2,7 @@
 
 > **Gere mensagens de commit inteligentes usando IA**
 
-[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
+[![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI%2FCD/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![Codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
 [![npm version](https://img.shields.io/npm/v/commit-wizard.svg)](https://www.npmjs.com/package/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
