@@ -12,19 +12,26 @@
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/commit-wizard.js"
+    "commit-wizard": "./dist/commit-wizard.js",
+    "commit-wizard-node": "./bin/commit-wizard-node.js"
   },
   "scripts": {
     "dev": "bun run bin/commit-wizard.ts",
+    "dev:node": "node bin/commit-wizard-node.js",
     "build": "bun build bin/commit-wizard.ts --outdir=dist --target=bun --minify",
+    "build:node": "tsc --project tsconfig.node.json",
     "test": "bun test",
+    "test:node": "node --test tests/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test && node scripts/generate-lcov.js",
     "test:coverage:report": "bun test --coverage && open coverage/lcov-report/index.html",
     "prepublishOnly": "bun run build && bun test",
     "start": "bun run bin/commit-wizard.ts",
+    "start:node": "node bin/commit-wizard-node.js",
     "ci:test": "bun test --reporter=verbose",
+    "ci:test:node": "node --test tests/",
     "ci:build": "bun run build",
+    "ci:build:node": "npm run build:node",
     "ci:lint": "bun run tsc --noEmit",
     "ci:security": "bun audit",
     "ci:integration": "bun test tests/integration.test.ts tests/smart-split.test.ts",
@@ -63,6 +70,7 @@
     "bin/",
     "src/",
     "dist/",
+    "dist-node/",
     "README.md",
     "LICENSE",
     ".commit-wizardrc"
