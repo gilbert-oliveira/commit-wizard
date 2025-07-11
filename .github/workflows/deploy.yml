@@ -58,9 +58,34 @@ jobs:
         
     - name: Verificar mudança de versão
       id: check
-      uses: EndBug/version-check@v2
-      with:
-        diff-search: true
+      run: |
+        echo "🔍 Verificando mudanças de versão..."
+        
+        # Obter versão atual do package.json
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "📦 Versão atual: $CURRENT_VERSION"
+        
+        # Verificar se há commits anteriores
+        if git rev-parse HEAD~1 >/dev/null 2>&1; then
+          # Verificar se há mudanças no package.json
+          if git diff --quiet HEAD~1 HEAD package.json; then
+            echo "📋 Nenhuma mudança detectada no package.json"
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "🔄 Mudanças detectadas no package.json"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+        else
+          # Primeiro commit ou branch sem histórico
+          echo "🆕 Primeiro commit ou branch sem histórico"
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "✅ Verificação de versão concluída"
+      shell: bash
         
     - name: Publicar no NPM
       if: steps.check.outputs.changed == 'true'
@@ -70,28 +95,49 @@ jobs:
         
     - name: Criar Release no GitHub
       if: steps.check.outputs.changed == 'true'
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v7
       with:
-        tag_name: v${{ steps.check.outputs.version }}
-        release_name: Release v${{ steps.check.outputs.version }}
-        draft: false
-        prerelease: false
-        body: |
-          🚀 Nova versão do Commit Wizard: v${{ steps.check.outputs.version }}
+        script: |
+          const version = '${{ steps.check.outputs.version }}';
+          const tagName = `v${version}`;
           
-          ## Instalação
-          ```bash
-          npm install -g commit-wizard
-          ```
-          
-          ## Como usar
-          ```bash
-          commit-wizard
-          ```
-          
-          Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).
+          try {
+            // Criar tag
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tagName}`,
+              sha: context.sha
+            });
+            
+            // Criar release
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tagName,
+              name: `Release v${version}`,
+              body: `🚀 Nova versão do Commit Wizard: v${version}
+              
+              ## Instalação
+              \`\`\`bash
+              npm install -g commit-wizard
+              \`\`\`
+              
+              ## Como usar
+              \`\`\`bash
+              commit-wizard
+              \`\`\`
+              
+              Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).`,
+              draft: false,
+              prerelease: false
+            });
+            
+            console.log(`✅ Release v${version} criado com sucesso`);
+          } catch (error) {
+            console.log(`⚠️  Erro ao criar release: ${error.message}`);
+            // Não falhar o workflow se não conseguir criar release
+          }
 
     - name: Preparar artefatos
       if: steps.check.outputs.changed == 'true'
