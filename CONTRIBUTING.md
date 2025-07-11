@@ -17,11 +17,11 @@ Obrigado por considerar contribuir para o commit-wizard! 🎉
 
    ```bash
    # Clone seu fork
-   git clone https://github.com/seu-usuario/commit-wizard.git
+   git clone https://github.com/gilbert-oliveira/commit-wizard.git
    cd commit-wizard
 
    # Adicione o repositório original como upstream
-   git remote add upstream https://github.com/user/commit-wizard.git
+   git remote add upstream https://github.com/gilbert-oliveira/commit-wizard.git
    ```
 
 2. **Instale dependências**
@@ -107,7 +107,7 @@ git push origin feature/nova-funcionalidade
 
 ### 6. Pull Request
 
-1. Vá para [Pull Requests](https://github.com/user/commit-wizard/pulls)
+1. Vá para [Pull Requests](https://github.com/gilbert-oliveira/commit-wizard/pulls)
 2. Clique em "New Pull Request"
 3. Selecione sua branch
 4. Preencha o template
@@ -357,15 +357,15 @@ bun run type-check
 
 Contribuidores serão listados em:
 
-- [Contributors](https://github.com/user/commit-wizard/graphs/contributors)
+- [Contributors](https://github.com/gilbert-oliveira/commit-wizard/graphs/contributors)
 - [README.md](../README.md#contributors)
 - [CHANGELOG.md](../CHANGELOG.md)
 
 ## 📞 Suporte
 
-- **Issues**: [GitHub Issues](https://github.com/user/commit-wizard/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/user/commit-wizard/discussions)
-- **Email**: [contribute@example.com](mailto:contribute@example.com)
+- **Issues**: [GitHub Issues](https://github.com/gilbert-oliveira/commit-wizard/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/gilbert-oliveira/commit-wizard/discussions)
+- **Email**: [contribute@gilbert.dev.br](mailto:contribute@gilbert.dev.br)
 
 ## 📝 Licença
 

@@ -8,9 +8,9 @@ Agradecemos que você reporte vulnerabilidades de segurança para nos ajudar a m
 
 **NÃO** abra uma issue pública para vulnerabilidades de segurança. Em vez disso:
 
-1. **Email**: Envie um email para [security@example.com](mailto:security@example.com)
-2. **GitHub Security**: Use o [GitHub Security Advisories](https://github.com/user/commit-wizard/security/advisories)
-3. **Formulário**: Use o [formulário de segurança](https://github.com/user/commit-wizard/security/advisories/new)
+1. **Email**: Envie um email para [security@gilbert.dev.br](mailto:security@gilbert.dev.br)
+2. **GitHub Security**: Use o [GitHub Security Advisories](https://github.com/gilbert-oliveira/commit-wizard/security/advisories)
+3. **Formulário**: Use o [formulário de segurança](https://github.com/gilbert-oliveira/commit-wizard/security/advisories/new)
 
 ### Informações Necessárias
 
@@ -100,11 +100,7 @@ Ambiente: Ubuntu 22.04, Node.js 18, Bun 1.0.0
 
 ## 📋 Histórico de Vulnerabilidades
 
-### 2024
-
-- **Nenhuma vulnerabilidade reportada**
-
-### 2023
+### 2025
 
 - **Nenhuma vulnerabilidade reportada**
 
@@ -112,13 +108,12 @@ Ambiente: Ubuntu 22.04, Node.js 18, Bun 1.0.0
 
 Agradecemos aos pesquisadores de segurança que reportam vulnerabilidades de forma responsável:
 
-- [Lista de pesquisadores](https://github.com/user/commit-wizard/security/advisories)
+- [Lista de pesquisadores](https://github.com/gilbert-oliveira/commit-wizard/security/advisories)
 
 ## 📞 Contato
 
-- **Email**: [security@example.com](mailto:security@example.com)
-- **GitHub**: [Security Advisories](https://github.com/user/commit-wizard/security/advisories)
-- **PGP**: [Chave pública](https://example.com/pgp-key.txt)
+- **Email**: [security@gilbert.dev.br](mailto:security@gilbert.dev.br)
+- **GitHub**: [Security Advisories](https://github.com/gilbert-oliveira/commit-wizard/security/advisories)
 
 ## 📝 Licença
 
@@ -126,5 +121,5 @@ Esta política de segurança está licenciada sob [CC BY 4.0](https://creativeco
 
 ---
 
-**Última atualização**: Janeiro 2024
-**Próxima revisão**: Julho 2024
+**Última atualização**: Julho 2025
+**Próxima revisão**: Julho 2025

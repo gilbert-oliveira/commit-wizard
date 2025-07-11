@@ -9,6 +9,15 @@
 
 Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
 
+## 📊 Status do Projeto
+
+- **✅ Core Functionality**: 100% completo
+- **✅ Smart Split**: 100% completo (cache implementado)
+- **✅ Testes**: 100% cobertura
+- **✅ Documentação**: 100% completa
+- **🔄 Distribuição**: 90% (CI/CD configurado, aguardando publicação)
+- **🚧 Interface Avançada**: 30% (edição de grupos em desenvolvimento)
+
 ## ✨ Funcionalidades
 
 ### 🧠 **Geração Inteligente**
@@ -35,7 +44,8 @@ Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagen
 
 - Análise de contexto das mudanças
 - Agrupamento por funcionalidade, correção, refatoração
-- **Interface de edição completa**:
+- **Cache inteligente** para análises similares
+- **Interface de edição** (em desenvolvimento):
   - ✏️ Renomear grupos
   - 📁 Reorganizar arquivos entre grupos
   - ➕ Criar novos grupos
@@ -156,9 +166,9 @@ Crie um arquivo `.commit-wizardrc` no seu projeto ou no diretório home:
     "compactMode": false
   },
   "cache": {
-    "enabled": true,
-    "ttl": 60,
-    "maxSize": 100
+    "enabled": true,        // ✅ Cache inteligente implementado
+    "ttl": 60,             // Tempo de vida em minutos
+    "maxSize": 100         // Máximo de entradas no cache
   },
   "advanced": {
     "maxFileSize": 1024,
@@ -231,7 +241,9 @@ commit-wizard --smart-split
 
 ### Interface de Edição
 
-Se escolher "Editar grupos", você pode:
+> **🚧 Em desenvolvimento** - A interface de edição de grupos será implementada em breve
+
+Quando implementada, você poderá:
 
 - **📝 Renomear grupos** - Alterar nome e descrição
 - **📁 Reorganizar arquivos** - Mover entre grupos
@@ -317,6 +329,15 @@ commit-wizard --smart-split
 # 3. test(auth): add comprehensive auth tests
 ```
 
+### Cache Inteligente
+
+O Commit Wizard usa cache inteligente para otimizar performance:
+
+- **Cache de análises**: Evita chamadas repetidas à OpenAI
+- **Hash MD5**: Identifica análises similares automaticamente
+- **TTL configurável**: Invalida cache antigo automaticamente
+- **Limpeza automática**: Remove entradas antigas quando necessário
+
 ### Split Manual para Controle Total
 
 ```bash
@@ -343,7 +364,7 @@ bun test tests/             # Testes de integração
 ### Desenvolvimento Local
 
 ```bash
-git clone https://github.com/seu-usuario/commit-wizard
+git clone https://github.com/gilbert-oliveira/commit-wizard
 cd commit-wizard
 bun install
 bun run dev
@@ -406,7 +427,7 @@ Ajuste no `.commit-wizardrc`:
 
 ## 📝 Licença
 
-MIT © [Seu Nome](https://github.com/seu-usuario)
+MIT © [Gilbert Oliveira](https://github.com/gilbert-oliveira)
 
 ---
 
@@ -420,20 +441,32 @@ MIT © [Seu Nome](https://github.com/seu-usuario)
 
 ## 🎯 Roadmap
 
-### Próximas Funcionalidades
+### ✅ Concluído Recentemente
 
-- [ ] Cache inteligente de análises
-- [ ] Plugins personalizados
-- [ ] Integração com VS Code
-- [ ] Templates de commit customizados
-- [ ] Análise de impacto das mudanças
+- [x] **Cache inteligente de análises** - Sistema de cache em memória com TTL configurável
+- [x] **Configuração avançada** - 40+ opções de configuração organizadas
+- [x] **Testes de integração** - Cobertura end-to-end completa
+- [x] **Documentação completa** - README profissional com exemplos práticos
+- [x] **CI/CD Pipeline** - Workflows automatizados para testes e build
 
-### Melhorias Planejadas
+### 🚧 Em Desenvolvimento
 
-- [ ] Suporte a mais idiomas
-- [ ] Interface gráfica opcional
-- [ ] Integração com CI/CD
-- [ ] Hooks personalizáveis
+- [ ] **Interface de edição de grupos** - Editar grupos do Smart Split antes do commit
+- [ ] **Tema escuro** - Suporte a tema escuro na interface
+
+### 📋 Próximas Funcionalidades
+
+- [ ] **Plugins personalizados** - Sistema extensível de plugins
+- [ ] **Integração com VS Code** - Extensão para VS Code
+- [ ] **Templates de commit customizados** - Templates personalizáveis
+- [ ] **Análise de impacto das mudanças** - Estimativa de impacto
+
+### 🎨 Melhorias Planejadas
+
+- [ ] **Suporte a mais idiomas** - Interface multilíngue
+- [ ] **Interface gráfica opcional** - GUI para usuários não-CLI
+- [ ] **Hooks personalizáveis** - Hooks para CI/CD
+- [ ] **Animações e UX** - Interface mais fluida
 
 ---
 
