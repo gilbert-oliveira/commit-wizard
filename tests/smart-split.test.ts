@@ -1,3 +1,6 @@
+// Importar polyfill antes de qualquer outra coisa
+import '../src/utils/polyfill';
+
 import { describe, it, expect, beforeEach } from 'bun:test';
 import {
   analyzeFileContext,
