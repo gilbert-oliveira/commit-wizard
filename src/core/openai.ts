@@ -220,6 +220,20 @@ export function detectCommitType(
 }
 
 /**
+ * Processa a mensagem retornada pela OpenAI removendo formatação desnecessária
+ */
+export function processOpenAIMessage(message: string): string {
+  // Remover backticks e especificação de linguagem se presentes
+  // Usar um regex mais específico que só remove linguagens conhecidas ou nada
+  message = message.replace(/^```(?:plaintext|javascript|typescript|python|java|html|css|json|xml|yaml|yml|bash|shell|text)?\s*/, '').replace(/\s*```$/, '');
+
+  // Remover quebras de linha extras
+  message = message.trim();
+
+  return message;
+}
+
+/**
  * Consome a API da OpenAI para gerar mensagem de commit
  */
 export async function generateCommitMessage(
@@ -275,11 +289,8 @@ export async function generateCommitMessage(
       };
     }
 
-    // Remover backticks se presentes
-    message = message.replace(/^```\s*/, '').replace(/\s*```$/, '');
-
-    // Remover quebras de linha extras
-    message = message.trim();
+    // Processar mensagem para remover formatação
+    message = processOpenAIMessage(message);
 
     // Extrair tipo da mensagem gerada pela OpenAI
     const extractedType = extractCommitTypeFromMessage(message);
