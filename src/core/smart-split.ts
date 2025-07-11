@@ -28,17 +28,21 @@ function buildContextAnalysisPrompt(
 ): string {
   // Limitar o tamanho do diff para evitar exceder tokens
   const maxDiffLength = 8000; // Limite conservador
-  const truncatedDiff = overallDiff.length > maxDiffLength 
-    ? overallDiff.substring(0, maxDiffLength) + '\n... (diff truncado)'
-    : overallDiff;
+  const truncatedDiff =
+    overallDiff.length > maxDiffLength
+      ? overallDiff.substring(0, maxDiffLength) + '\n... (diff truncado)'
+      : overallDiff;
 
   // Calcular estatísticas básicas
   const totalFiles = files.length;
-  const fileTypes = files.reduce((acc, file) => {
-    const ext = file.split('.').pop() || 'sem-extensao';
-    acc[ext] = (acc[ext] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const fileTypes = files.reduce(
+    (acc, file) => {
+      const ext = file.split('.').pop() || 'sem-extensao';
+      acc[ext] = (acc[ext] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const fileStats = Object.entries(fileTypes)
     .map(([ext, count]) => `${ext}: ${count}`)
@@ -73,12 +77,15 @@ Agrupe arquivos relacionados. Máximo 5 grupos. Responda em JSON:
  */
 function buildFallbackPrompt(files: string[]): string {
   // Agrupar arquivos por diretório
-  const filesByDir = files.reduce((acc, file) => {
-    const dir = file.split('/').slice(0, -1).join('/') || 'root';
-    if (!acc[dir]) acc[dir] = [];
-    acc[dir].push(file);
-    return acc;
-  }, {} as Record<string, string[]>);
+  const filesByDir = files.reduce(
+    (acc, file) => {
+      const dir = file.split('/').slice(0, -1).join('/') || 'root';
+      if (!acc[dir]) acc[dir] = [];
+      acc[dir].push(file);
+      return acc;
+    },
+    {} as Record<string, string[]>
+  );
 
   const dirStats = Object.entries(filesByDir)
     .map(([dir, files]) => `${dir}: ${files.length} arquivo(s)`)
@@ -133,14 +140,16 @@ export async function analyzeFileContext(
     // Decidir qual prompt usar baseado no tamanho
     const maxDiffLength = 6000; // Limite mais conservador
     const useFallback = overallDiff.length > maxDiffLength;
-    
-    const prompt = useFallback 
+
+    const prompt = useFallback
       ? buildFallbackPrompt(files)
       : buildContextAnalysisPrompt(files, overallDiff);
 
     // Log opcional sobre o uso do fallback
     if (useFallback) {
-      console.warn(`⚠️  Diff muito grande (${overallDiff.length} chars), usando análise baseada em nomes de arquivos`);
+      console.warn(
+        `⚠️  Diff muito grande (${overallDiff.length} chars), usando análise baseada em nomes de arquivos`
+      );
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -250,7 +259,7 @@ export async function generateGroupDiff(group: FileGroup): Promise<string> {
         const diff = getFileDiff(file);
         // Limitar tamanho do diff individual
         const maxDiffLength = 4000;
-        return diff.length > maxDiffLength 
+        return diff.length > maxDiffLength
           ? diff.substring(0, maxDiffLength) + '\n... (diff truncado)'
           : diff;
       } catch {
@@ -294,10 +303,12 @@ export async function generateGroupDiff(group: FileGroup): Promise<string> {
             });
             // Limitar conteúdo do arquivo novo
             const maxContentLength = 2000;
-            const truncatedContent = content.length > maxContentLength 
-              ? content.substring(0, maxContentLength) + '\n... (conteúdo truncado)'
-              : content;
-            
+            const truncatedContent =
+              content.length > maxContentLength
+                ? content.substring(0, maxContentLength) +
+                  '\n... (conteúdo truncado)'
+                : content;
+
             return `diff --git a/${file} b/${file}\nnew file mode 100644\nindex 0000000..${Math.random().toString(36).substr(2, 7)}\n--- /dev/null\n+++ b/${file}\n@@ -0,0 +1,${truncatedContent.split('\n').length} @@\n${truncatedContent
               .split('\n')
               .map((line) => `+${line}`)
@@ -341,10 +352,12 @@ export async function generateGroupDiff(group: FileGroup): Promise<string> {
             });
             // Limitar conteúdo do arquivo recriado
             const maxContentLength = 2000;
-            const truncatedContent = content.length > maxContentLength 
-              ? content.substring(0, maxContentLength) + '\n... (conteúdo truncado)'
-              : content;
-            
+            const truncatedContent =
+              content.length > maxContentLength
+                ? content.substring(0, maxContentLength) +
+                  '\n... (conteúdo truncado)'
+                : content;
+
             return `diff --git a/${file} b/${file}\nindex 0000000..${Math.random().toString(36).substr(2, 7)} 100644\n--- a/${file}\n+++ b/${file}\n@@ -1 +1,${truncatedContent.split('\n').length} @@\n${truncatedContent
               .split('\n')
               .map((line) => `+${line}`)
@@ -361,8 +374,8 @@ export async function generateGroupDiff(group: FileGroup): Promise<string> {
   // Limitar tamanho total do diff combinado
   const combinedDiff = diffs.join('\n');
   const maxTotalLength = 8000;
-  
-  return combinedDiff.length > maxTotalLength 
+
+  return combinedDiff.length > maxTotalLength
     ? combinedDiff.substring(0, maxTotalLength) + '\n... (diff total truncado)'
     : combinedDiff;
 }
@@ -478,7 +491,9 @@ export async function handleSmartSplitMode(
 
     if (!result.success) {
       if (!args.silent) {
-        log.error(`❌ Erro ao gerar commit para ${group.name}: ${result.error}`);
+        log.error(
+          `❌ Erro ao gerar commit para ${group.name}: ${result.error}`
+        );
       }
       continue;
     }
@@ -515,11 +530,14 @@ export async function handleSmartSplitMode(
       } else {
         // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
         const { execSync } = await import('child_process');
+        // Importar função de escape do módulo git
+        const { escapeShellArg } = await import('../git/index.ts');
         try {
           // Fazer commit apenas dos arquivos do grupo
-          const filesArg = group.files.map((f) => `"${f}"`).join(' ');
+          const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
+          const escapedMessage = escapeShellArg(result.suggestion.message || '');
           execSync(
-            `git commit ${filesArg} -m "${(result.suggestion.message || '').replace(/"/g, '\\"')}"`,
+            `git commit ${filesArg} -m ${escapedMessage}`,
             {
               stdio: 'pipe',
             }
@@ -575,11 +593,14 @@ export async function handleSmartSplitMode(
           } else {
             // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
             const { execSync } = await import('child_process');
+            // Importar função de escape do módulo git
+            const { escapeShellArg } = await import('../git/index.ts');
             try {
               // Fazer commit apenas dos arquivos do grupo
-              const filesArg = group.files.map((f) => `"${f}"`).join(' ');
+              const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
+              const escapedMessage = escapeShellArg(commitMessage);
               execSync(
-                `git commit ${filesArg} -m "${commitMessage.replace(/"/g, '\\"')}"`,
+                `git commit ${filesArg} -m ${escapedMessage}`,
                 {
                   stdio: 'pipe',
                 }
@@ -624,11 +645,14 @@ export async function handleSmartSplitMode(
             } else {
               // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
               const { execSync } = await import('child_process');
+              // Importar função de escape do módulo git
+              const { escapeShellArg } = await import('../git/index.ts');
               try {
                 // Fazer commit apenas dos arquivos do grupo
-                const filesArg = group.files.map((f) => `"${f}"`).join(' ');
+                const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
+                const escapedMessage = escapeShellArg(editAction.message || '');
                 execSync(
-                  `git commit ${filesArg} -m "${(editAction.message || '').replace(/"/g, '\\"')}"`,
+                  `git commit ${filesArg} -m ${escapedMessage}`,
                   {
                     stdio: 'pipe',
                   }

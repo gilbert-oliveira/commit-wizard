@@ -37,14 +37,16 @@ export function buildPrompt(
 
   // Limitar tamanho do diff para economizar tokens
   const maxDiffLength = 6000;
-  const truncatedDiff = diff.length > maxDiffLength 
-    ? diff.substring(0, maxDiffLength) + '\n... (diff truncado)'
-    : diff;
+  const truncatedDiff =
+    diff.length > maxDiffLength
+      ? diff.substring(0, maxDiffLength) + '\n... (diff truncado)'
+      : diff;
 
   // Simplificar lista de arquivos se houver muitos
-  const fileList = filenames.length > 10 
-    ? `${filenames.length} arquivos: ${filenames.slice(0, 5).join(', ')}...`
-    : filenames.join(', ');
+  const fileList =
+    filenames.length > 10
+      ? `${filenames.length} arquivos: ${filenames.slice(0, 5).join(', ')}...`
+      : filenames.join(', ');
 
   const prompt = `Gere mensagem de commit em ${language} (${config.commitStyle}).
 
@@ -223,11 +225,16 @@ export function detectCommitType(
  * Processa a mensagem retornada pela OpenAI removendo formatação desnecessária
  */
 export function processOpenAIMessage(message: string): string {
-  // Remover backticks e especificação de linguagem se presentes
-  // Usar um regex mais específico que só remove linguagens conhecidas ou nada
-  message = message.replace(/^```(?:plaintext|javascript|typescript|python|java|html|css|json|xml|yaml|yml|bash|shell|text)?\s*/, '').replace(/\s*```$/, '');
+  // Remover backticks de código APENAS se a mensagem inteira está envolvida em backticks
+  // Isso preserva nomes de funções, métodos e variáveis dentro da mensagem
+  if (message.match(/^```[\s\S]*```$/)) {
+    // Se a mensagem inteira está em um bloco de código, remover as marcações
+    message = message
+      .replace(/^```(?:plaintext|javascript|typescript|python|java|html|css|json|xml|yaml|yml|bash|shell|text)?\s*/, '')
+      .replace(/\s*```$/, '');
+  }
 
-  // Remover quebras de linha extras
+  // Remover quebras de linha extras do início e fim
   message = message.trim();
 
   return message;

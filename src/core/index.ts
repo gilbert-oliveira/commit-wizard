@@ -278,7 +278,11 @@ async function handleSplitMode(gitStatus: any, config: any, args: CLIArgs) {
       log.info(`🤖 Gerando commit para: ${selectedFiles.join(', ')}`);
     }
 
-    const result = await generateWithRetry(fileDiffs, config, selectedFiles.filter((file): file is string => file !== undefined));
+    const result = await generateWithRetry(
+      fileDiffs,
+      config,
+      selectedFiles.filter((file): file is string => file !== undefined)
+    );
 
     if (!result.success) {
       log.error(`❌ Erro ao gerar commit: ${result.error}`);
