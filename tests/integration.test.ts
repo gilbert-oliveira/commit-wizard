@@ -149,12 +149,10 @@ export class UserService {
         writeFileSync(
           join(repoDir, 'tests/auth.test.ts'),
           `
-import { AuthService } from '../src/auth';
-
 describe('AuthService', () => {
   it('should authenticate valid user', () => {
-    const auth = new AuthService();
-    expect(auth.login('admin', 'password')).toBe(true);
+    // Teste simulado para demonstração
+    expect(true).toBe(true);
   });
 });
 `
