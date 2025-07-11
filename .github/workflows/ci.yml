@@ -1,235 +1,151 @@
-name: CI/CD Pipeline
+name: CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main, develop]
-  release:
-    types: [published]
+    branches: [ main ]
 
 env:
-  NODE_VERSION: '18'
   BUN_VERSION: '1.2.13'
 
 jobs:
-  # Testes e Qualidade de Código
   test:
-    name: Testes e Qualidade
     runs-on: ubuntu-latest
-
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Cache dependências
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.bun/install/cache
-            node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Executar testes
-        run: bun test
-
-      - name: Executar testes com cobertura
-        run: bun run test:coverage
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          verbose: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Verificar build
-        run: |
-          if [ -f "dist/commit-wizard.js" ]; then
-            echo "✅ Build gerado com sucesso"
-            ls -la dist/
-          else
-            echo "❌ Build falhou"
-            exit 1
-          fi
-
-  # Linting e Formatação
-  lint:
-    name: Linting e Formatação
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Verificar estrutura do código
-        run: |
-          echo "🔍 Verificando estrutura do código..."
-          echo "📁 Arquivos TypeScript:"
-          find src/ -name "*.ts" | wc -l
-          echo "📁 Arquivos de teste:"
-          find . -name "*.test.ts" | wc -l
-          echo "✅ Estrutura do código verificada"
-
-      - name: Verificar tipos TypeScript
-        run: bun run tsc --noEmit
-
-  # Testes de Integração
-  integration:
-    name: Testes de Integração
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Configurar Git para testes
-        run: |
-          git config --global user.name "CI Bot"
-          git config --global user.email "ci@example.com"
-
-      - name: Executar testes de integração
-        run: bun test tests/integration.test.ts
-
-      - name: Executar testes Smart Split
-        run: bun test tests/smart-split.test.ts
-
-  # Build e Teste de Instalação
-  build-test:
-    name: Build e Teste de Instalação
-    runs-on: ubuntu-latest
-    needs: [test, lint]
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Testar instalação local
-        run: |
-          # Simular instalação local
-          bun run build
-          chmod +x dist/commit-wizard.js
-
-          # Testar execução básica
-          echo "Testando execução do CLI..."
-          timeout 10s bun run dist/commit-wizard.js --help || true
-
-      - name: Verificar arquivos de distribuição
-        run: |
-          echo "📦 Arquivos de distribuição:"
+    - name: Cache dependências
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.bun/install/cache
+          node_modules
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Check TypeScript types
+      run: bun run tsc --noEmit
+      
+    - name: Run tests
+      run: bun test
+      
+    - name: Run tests with coverage
+      run: bun run test:coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+        
+    - name: Run integration tests
+      run: |
+        git config --global user.name "CI Bot"
+        git config --global user.email "ci@example.com"
+        bun test tests/integration.test.ts
+        
+    - name: Run Smart Split tests
+      run: bun test tests/smart-split.test.ts
+        
+    - name: Build project
+      run: bun run build
+      
+    - name: Verify build
+      run: |
+        if [ -f "dist/commit-wizard.js" ]; then
+          echo "✅ Build gerado com sucesso"
           ls -la dist/
-          echo ""
-          echo "📄 Conteúdo do package.json:"
-          cat package.json | jq '.files'
+          chmod +x dist/commit-wizard.js
+          timeout 10s bun run dist/commit-wizard.js --help || true
+        else
+          echo "❌ Build falhou"
+          exit 1
+        fi
 
-  # Publicação no NPM (apenas em releases)
   publish:
-    name: Publicar no NPM
+    needs: test
     runs-on: ubuntu-latest
-    needs: [test, lint, integration, build-test]
-    if: github.event_name == 'release' && github.event.action == 'published'
-
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Configurar NPM
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-          npm config set access public
-
-      - name: Publicar no NPM
-        run: npm publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  # Criar Release no GitHub
-  release:
-    name: Criar Release
-    runs-on: ubuntu-latest
-    needs: [test, lint, integration, build-test]
-    if: github.event_name == 'release' && github.event.action == 'published'
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Criar arquivo de distribuição
-        run: |
-          mkdir -p release
-          cp -r dist/ release/
-          cp package.json README.md LICENSE .commit-wizardrc release/
-          cd release && tar -czf commit-wizard-${{ github.event.release.tag_name }}.tar.gz *
-
-      - name: Upload assets para release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/commit-wizard-${{ github.event.release.tag_name }}.tar.gz
-          asset_name: commit-wizard-${{ github.event.release.tag_name }}.tar.gz
-          asset_content_type: application/gzip
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Build project
+      run: bun run build
+      
+    - name: Check if version changed
+      id: check
+      uses: EndBug/version-check@v2
+      with:
+        diff-search: true
+        
+    - name: Publish to NPM
+      if: steps.check.outputs.changed == 'true'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Create GitHub Release
+      if: steps.check.outputs.changed == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.check.outputs.version }}
+        release_name: Release v${{ steps.check.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          🚀 Nova versão do Commit Wizard: v${{ steps.check.outputs.version }}
+          
+          ## Instalação
+          ```bash
+          npm install -g commit-wizard
+          ```
+          
+          ## Como usar
+          ```bash
+          commit-wizard
+          ```
+          
+          Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).
