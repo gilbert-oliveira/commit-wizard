@@ -168,9 +168,9 @@ Crie um arquivo `.commit-wizardrc` no seu projeto ou no diretório home:
     "compactMode": false
   },
   "cache": {
-    "enabled": true,        // ✅ Cache inteligente implementado
-    "ttl": 60,             // Tempo de vida em minutos
-    "maxSize": 100         // Máximo de entradas no cache
+    "enabled": true, // ✅ Cache inteligente implementado
+    "ttl": 60, // Tempo de vida em minutos
+    "maxSize": 100 // Máximo de entradas no cache
   },
   "advanced": {
     "maxFileSize": 1024,
