@@ -54,16 +54,7 @@ jobs:
     - name: Executar testes com cobertura
       run: bun run test:coverage
       
-    - name: Upload cobertura para Codecov
-      if: matrix.node-version == '20.x'
-      uses: codecov/codecov-action@v5
-      with:
-        files: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+
         
     - name: Executar testes de integração
       if: matrix.node-version == '20.x'

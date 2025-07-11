@@ -5,7 +5,7 @@
 [![CI/CD](https://github.com/gilbert-oliveira/commit-wizard/workflows/CI/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![Security](https://github.com/gilbert-oliveira/commit-wizard/workflows/Segurança/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![Deploy](https://github.com/gilbert-oliveira/commit-wizard/workflows/Deploy/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
-[![Codecov](https://codecov.io/gh/gilbert-oliveira/commit-wizard/branch/main/graph/badge.svg)](https://codecov.io/gh/gilbert-oliveira/commit-wizard)
+
 [![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
