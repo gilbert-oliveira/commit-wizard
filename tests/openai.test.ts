@@ -154,17 +154,19 @@ describe('OpenAI Module', () => {
 
   describe('processOpenAIMessage', () => {
     it('should remove plaintext code block formatting', () => {
-      const input = '```plaintext\nchore(codecov): remover integração com Codecov\n```';
+      const input =
+        '```plaintext\nchore(codecov): remover integração com Codecov\n```';
       const expected = 'chore(codecov): remover integração com Codecov';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
 
     it('should remove javascript code block formatting', () => {
-      const input = '```javascript\nfeat(auth): adicionar validação de email\n```';
+      const input =
+        '```javascript\nfeat(auth): adicionar validação de email\n```';
       const expected = 'feat(auth): adicionar validação de email';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -172,7 +174,7 @@ describe('OpenAI Module', () => {
     it('should remove typescript code block formatting', () => {
       const input = '```typescript\nfix(ui): corrigir layout responsivo\n```';
       const expected = 'fix(ui): corrigir layout responsivo';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -180,7 +182,7 @@ describe('OpenAI Module', () => {
     it('should remove simple code block without language specification', () => {
       const input = '```\nrefactor(core): simplificar estrutura de dados\n```';
       const expected = 'refactor(core): simplificar estrutura de dados';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -188,7 +190,7 @@ describe('OpenAI Module', () => {
     it('should handle messages without code blocks', () => {
       const input = 'docs(readme): atualizar documentação';
       const expected = 'docs(readme): atualizar documentação';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -196,23 +198,26 @@ describe('OpenAI Module', () => {
     it('should trim extra whitespace and newlines', () => {
       const input = '  \n  test(unit): adicionar testes para cache  \n  ';
       const expected = 'test(unit): adicionar testes para cache';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
 
     it('should handle multiline commit messages within code blocks', () => {
-      const input = '```\nfeat(auth): adicionar autenticação OAuth\n\n- Integração com Google\n- Validação de tokens\n```';
-      const expected = 'feat(auth): adicionar autenticação OAuth\n\n- Integração com Google\n- Validação de tokens';
-      
+      const input =
+        '```\nfeat(auth): adicionar autenticação OAuth\n\n- Integração com Google\n- Validação de tokens\n```';
+      const expected =
+        'feat(auth): adicionar autenticação OAuth\n\n- Integração com Google\n- Validação de tokens';
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
 
     it('should handle code blocks with spaces after language specification', () => {
-      const input = '```text   \nci(github): configurar workflow de deploy\n```';
+      const input =
+        '```text   \nci(github): configurar workflow de deploy\n```';
       const expected = 'ci(github): configurar workflow de deploy';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -220,7 +225,7 @@ describe('OpenAI Module', () => {
     it('should handle empty or whitespace-only messages', () => {
       const input = '```\n   \n```';
       const expected = '';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -228,7 +233,7 @@ describe('OpenAI Module', () => {
     it('should handle code blocks without newlines after opening backticks', () => {
       const input = '```feat: implementar login```';
       const expected = 'feat: implementar login';
-      
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });
@@ -236,7 +241,63 @@ describe('OpenAI Module', () => {
     it('should handle code blocks with language and no newlines', () => {
       const input = '```textchore: atualizar dependências```';
       const expected = 'chore: atualizar dependências';
-      
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve preservar nomes de funções e métodos nas mensagens', () => {
+      const input = 'feat(git): adicionar escape de caracteres especiais em mensagens de commit';
+      const expected = 'feat(git): adicionar escape de caracteres especiais em mensagens de commit';
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve preservar nomes de funções com backticks nas mensagens', () => {
+      const input = 'feat(auth): implementar função `validateUser` no AuthService';
+      const expected = 'feat(auth): implementar função `validateUser` no AuthService';
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve preservar nomes de classes e métodos com aspas duplas', () => {
+      const input = 'fix(service): corrigir método "processPayment" na classe PaymentService';
+      const expected = 'fix(service): corrigir método "processPayment" na classe PaymentService';
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve preservar nomes de arquivos e funções com aspas simples', () => {
+      const input = "refactor(core): melhorar função 'calculateTotal' em utils.ts";
+      const expected = "refactor(core): melhorar função 'calculateTotal' em utils.ts";
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve remover code blocks apenas quando a mensagem inteira está envolvida', () => {
+      const inputWrapped = '```\nfeat(api): adicionar endpoint de autenticação\n```';
+      const expectedUnwrapped = 'feat(api): adicionar endpoint de autenticação';
+
+      const result = processOpenAIMessage(inputWrapped);
+      expect(result).toBe(expectedUnwrapped);
+    });
+
+    it('deve preservar code blocks internos quando não envolvem a mensagem inteira', () => {
+      const input = 'feat(docs): adicionar exemplo de uso: `commit-wizard --help`';
+      const expected = 'feat(docs): adicionar exemplo de uso: `commit-wizard --help`';
+
+      const result = processOpenAIMessage(input);
+      expect(result).toBe(expected);
+    });
+
+    it('deve lidar com mensagens complexas com múltiplos tipos de aspas', () => {
+      const input = `feat(git): implementar função "escapeShellArg" para garantir segurança ao usar aspas simples em comandos shell`;
+      const expected = `feat(git): implementar função "escapeShellArg" para garantir segurança ao usar aspas simples em comandos shell`;
+
       const result = processOpenAIMessage(input);
       expect(result).toBe(expected);
     });

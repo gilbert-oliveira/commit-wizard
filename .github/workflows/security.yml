@@ -115,17 +115,17 @@ jobs:
           echo "📊 Análise de complexidade do código..."
           echo "📁 Arquivos TypeScript no projeto:"
           find src/ -name "*.ts" -exec echo "  - {}" \;
-          
+
           echo "📏 Tamanho dos arquivos:"
           find src/ -name "*.ts" -exec wc -l {} + | sort -nr
-          
+
           echo "✅ Análise de complexidade concluída"
         shell: bash
 
       - name: Verificar estrutura do projeto
         run: |
           echo "🏗️  Verificando estrutura do projeto..."
-          
+
           # Verificar se todos os arquivos principais existem
           required_files=("package.json" "tsconfig.json" "README.md" "LICENSE")
           for file in "${required_files[@]}"; do
@@ -136,7 +136,7 @@ jobs:
               exit 1
             fi
           done
-          
+
           # Verificar estrutura de diretórios
           required_dirs=("src" "tests")
           for dir in "${required_dirs[@]}"; do
@@ -147,6 +147,6 @@ jobs:
               exit 1
             fi
           done
-          
+
           echo "✅ Estrutura do projeto está correta"
         shell: bash

@@ -9,7 +9,10 @@ import { tmpdir } from 'os';
 
 // Função helper para criar um repositório Git temporário
 function createTempRepo(): string {
-  const tempDir = join(tmpdir(), `commit-wizard-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const tempDir = join(
+    tmpdir(),
+    `commit-wizard-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  );
   mkdirSync(tempDir, { recursive: true });
 
   try {
@@ -33,7 +36,7 @@ function createTempRepo(): string {
 // Função helper para cleanup com retry
 function cleanupTempRepo(tempDir: string) {
   if (!existsSync(tempDir)) return;
-  
+
   let retries = 3;
   while (retries > 0) {
     try {
@@ -42,7 +45,10 @@ function cleanupTempRepo(tempDir: string) {
     } catch {
       retries--;
       if (retries === 0) {
-        console.warn('Aviso: Não foi possível limpar diretório temporário:', tempDir);
+        console.warn(
+          'Aviso: Não foi possível limpar diretório temporário:',
+          tempDir
+        );
       } else {
         // Aguardar um pouco antes de tentar novamente
         setTimeout(() => {}, 100);
@@ -79,12 +85,15 @@ function createTestFiles(repoDir: string) {
     // Commit inicial com tratamento de erro
     try {
       execSync('git add .', { cwd: repoDir, stdio: 'ignore' });
-      execSync('git commit -m "Initial commit"', { cwd: repoDir, stdio: 'ignore' });
-         } catch {
-       console.warn('Aviso: Erro ao criar commit inicial');
-     }
-   } catch {
-     console.warn('Aviso: Erro ao criar arquivos de teste');
+      execSync('git commit -m "Initial commit"', {
+        cwd: repoDir,
+        stdio: 'ignore',
+      });
+    } catch {
+      console.warn('Aviso: Erro ao criar commit inicial');
+    }
+  } catch {
+    console.warn('Aviso: Erro ao criar arquivos de teste');
   }
 }
 
@@ -210,13 +219,13 @@ Returns list of users.
     }
 
     // Adicionar arquivos ao staging
-         try {
-       execSync('git add .', { cwd: repoDir, stdio: 'ignore' });
-     } catch {
-       console.warn('Aviso: Erro ao adicionar arquivos ao Git');
-     }
-   } catch {
-     console.warn('Aviso: Erro ao modificar arquivos');
+    try {
+      execSync('git add .', { cwd: repoDir, stdio: 'ignore' });
+    } catch {
+      console.warn('Aviso: Erro ao adicionar arquivos ao Git');
+    }
+  } catch {
+    console.warn('Aviso: Erro ao modificar arquivos');
   }
 }
 
@@ -237,7 +246,7 @@ describe('Commit Wizard - Testes de Integração', () => {
     } catch (error) {
       console.warn('Aviso: Erro ao restaurar diretório:', error);
     }
-    
+
     // Cleanup com delay para evitar race conditions
     setTimeout(() => {
       cleanupTempRepo(tempRepo);
@@ -247,7 +256,7 @@ describe('Commit Wizard - Testes de Integração', () => {
   describe('Configuração', () => {
     it('deve carregar configuração padrão', async () => {
       const { loadConfig } = await import('../src/config/index.ts');
-      
+
       const config = loadConfig();
       expect(config).toBeDefined();
       expect(config.language).toBe('pt');
@@ -272,7 +281,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         writeFileSync(configPath, JSON.stringify(customConfig, null, 2));
 
         // Aguardar um pouco para garantir que o arquivo foi escrito
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         const { loadConfig } = await import('../src/config/index.ts');
         const config = loadConfig(configPath);
@@ -280,17 +289,17 @@ describe('Commit Wizard - Testes de Integração', () => {
         // Verificações mais robustas
         expect(config).toBeDefined();
         expect(typeof config).toBe('object');
-        
+
         // Verificar propriedades básicas
         expect(config.language).toBe('en');
         expect(config.commitStyle).toBe('simple');
-        
+
         // Verificar que openai existe e tem as propriedades esperadas
         expect(config.openai).toBeDefined();
         expect(typeof config.openai).toBe('object');
         expect(config.openai.model).toBe('gpt-4');
         expect(config.openai.maxTokens).toBe(200);
-        
+
         // Verificar que outras propriedades padrão ainda existem
         expect(config.smartSplit).toBeDefined();
         expect(config.cache).toBeDefined();
@@ -339,7 +348,7 @@ describe('Commit Wizard - Testes de Integração', () => {
   describe('Funções Git', () => {
     it('deve detectar repositório Git', async () => {
       const { isGitRepository } = await import('../src/git/index.ts');
-      
+
       // Testar fora de repositório Git
       const result = isGitRepository();
       expect(typeof result).toBe('boolean');
@@ -396,11 +405,11 @@ describe('Commit Wizard - Testes de Integração', () => {
       const { loadConfig } = await import('../src/config/index.ts');
 
       const config = loadConfig();
-      
+
       // Verificar que as funções existem
       expect(initializeCache).toBeDefined();
       expect(typeof initializeCache).toBe('function');
-      
+
       // Simular uso do cache
       initializeCache(config);
     });
@@ -414,11 +423,18 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.env.OPENAI_API_KEY = 'test-key';
         modifyFiles(tempRepo, 'complex');
 
-        const { analyzeFileContext } = await import('../src/core/smart-split.ts');
+        const { analyzeFileContext } = await import(
+          '../src/core/smart-split.ts'
+        );
         const { loadConfig } = await import('../src/config/index.ts');
 
         const config = loadConfig();
-        const files = ['src/api.ts', 'src/utils.ts', 'docs/API.md', 'package.json'];
+        const files = [
+          'src/api.ts',
+          'src/utils.ts',
+          'docs/API.md',
+          'package.json',
+        ];
         const diff = 'mock diff content';
 
         // Verificar se a função existe e pode ser chamada
@@ -434,14 +450,16 @@ describe('Commit Wizard - Testes de Integração', () => {
           setTimeout(() => reject(new Error('Timeout')), 5000);
         });
 
-        const analysis = await Promise.race([result, timeoutPromise]).catch((error) => {
-          // Se der timeout ou erro, retornar resultado mock
-          return {
-            success: false,
-            error: error.message,
-            groups: []
-          };
-        }) as { success: boolean; error?: string; groups?: any[] };
+        const analysis = (await Promise.race([result, timeoutPromise]).catch(
+          (error) => {
+            // Se der timeout ou erro, retornar resultado mock
+            return {
+              success: false,
+              error: error.message,
+              groups: [],
+            };
+          }
+        )) as { success: boolean; error?: string; groups?: any[] };
 
         expect(analysis).toBeDefined();
         expect(typeof analysis).toBe('object');
@@ -463,7 +481,9 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.chdir(tempRepo);
         modifyFiles(tempRepo, 'multiple');
 
-        const { generateGroupDiff } = await import('../src/core/smart-split.ts');
+        const { generateGroupDiff } = await import(
+          '../src/core/smart-split.ts'
+        );
         const group = {
           id: 'test-group',
           name: 'Auth System',

@@ -14,6 +14,15 @@ export interface GitCommitResult {
 }
 
 /**
+ * Escapa caracteres especiais para uso seguro em comandos shell
+ */
+export function escapeShellArg(arg: string): string {
+  // Para mensagens de commit, usamos aspas simples que são mais seguras
+  // Escapamos apenas aspas simples dentro da string
+  return `'${arg.replace(/'/g, "'\"'\"'")}'`;
+}
+
+/**
  * Verifica se estamos em um repositório Git
  */
 export function isGitRepository(): boolean {
@@ -80,8 +89,9 @@ export function getFileDiff(filename: string): string {
  */
 export function executeCommit(message: string): GitCommitResult {
   try {
-    // Executar commit
-    execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, {
+    // Usar aspas simples para evitar problemas com caracteres especiais
+    const escapedMessage = escapeShellArg(message);
+    execSync(`git commit -m ${escapedMessage}`, {
       stdio: 'pipe',
     });
 
@@ -115,8 +125,10 @@ export function executeFileCommit(
   message: string
 ): GitCommitResult {
   try {
-    // Commit apenas do arquivo específico
-    execSync(`git commit "${filename}" -m "${message.replace(/"/g, '\\"')}"`, {
+    // Usar aspas simples para evitar problemas com caracteres especiais
+    const escapedMessage = escapeShellArg(message);
+    const escapedFilename = escapeShellArg(filename);
+    execSync(`git commit ${escapedFilename} -m ${escapedMessage}`, {
       stdio: 'pipe',
     });
 

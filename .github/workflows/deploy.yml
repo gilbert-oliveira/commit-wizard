@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     types: [completed]
     branches: [main]
 
@@ -17,161 +17,161 @@ jobs:
     name: Publicar no NPM
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
-    
+
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        registry-url: 'https://registry.npmjs.org'
-        
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: ${{ env.BUN_VERSION }}
-        
-    - name: Instalar dependências
-      run: bun install
-      
-    - name: Build do projeto
-      run: bun run build
-      
-    - name: Verificar qualidade do build
-      run: |
-        echo "🔍 Verificando qualidade do build..."
-        
-        if [ ! -f "dist/commit-wizard.js" ]; then
-          echo "❌ Arquivo principal não encontrado"
-          exit 1
-        fi
-        
-        chmod +x dist/commit-wizard.js
-        echo "📦 Tamanho do build:"
-        ls -lh dist/
-        
-        # Testar execução básica
-        timeout 10s bun run dist/commit-wizard.js --help || true
-        echo "✅ Build verificado com sucesso"
-      shell: bash
-        
-    - name: Obter versão atual
-      id: version
-      run: |
-        echo "📦 Obtendo versão atual..."
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
-        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        echo "✅ Versão atual: $CURRENT_VERSION"
-      shell: bash
-        
-    - name: Obter versão publicada no NPM
-      id: published
-      run: |
-        PUBLISHED_VERSION=$(npm view @gilbert_oliveira/commit-wizard version || echo "0.0.0")
-        echo "PUBLISHED_VERSION=$PUBLISHED_VERSION" >> $GITHUB_ENV
-        echo "published=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-    - name: Verificar se a versão mudou
-      id: should_publish
-      run: |
-        if [ "${{ steps.version.outputs.version }}" = "${{ steps.published.outputs.published }}" ]; then
-          echo "A versão não mudou. Pulando publicação."
-          echo "publish=false" >> $GITHUB_OUTPUT
-        else
-          echo "Versão nova detectada. Pronto para publicar."
-          echo "publish=true" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Verificar mudanças no pacote
-      id: changes
-      uses: dorny/paths-filter@v2
-      with:
-        filters: |
-          changes:
-            - 'package.json'
-            - 'src/**'
-            - 'bin/**'
-            - 'scripts/**'
-            - 'dist/**'
-            - '.commit-wizardrc'
-            - '.commit-wizard.json'
-            - 'bunfig.toml'
-            - 'tsconfig.json'
-            - 'bun.lock'
-            - 'package-lock.json'
-            - 'yarn.lock'
-        
-    - name: Publicar no NPM
-      if: steps.changes.outputs.changes == 'true' && steps.should_publish.outputs.publish == 'true'
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        
-    - name: Criar Release no GitHub
-      if: steps.changes.outputs.changes == 'true' && steps.should_publish.outputs.publish == 'true'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const version = '${{ env.CURRENT_VERSION }}';
-          const tagName = `v${version}`;
-          
-          try {
-            // Criar tag
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/${tagName}`,
-              sha: context.sha
-            });
-            
-            // Criar release
-            await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: tagName,
-              name: `Release v${version}`,
-              body: `🚀 Nova versão do Commit Wizard: v${version}
-              
-              ## Instalação
-              \`\`\`bash
-              bun install -g @gilbert_oliveira/commit-wizard
-              \`\`\`
-              
-              ## Como usar
-              \`\`\`bash
-              commit-wizard
-              \`\`\`
-              
-              Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).`,
-              draft: false,
-              prerelease: false
-            });
-            
-            console.log(`✅ Release v${version} criado com sucesso`);
-          } catch (error) {
-            console.log(`⚠️  Erro ao criar release: ${error.message}`);
-            // Não falhar o workflow se não conseguir criar release
-          }
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
 
-    - name: Preparar artefatos
-      if: steps.changes.outputs.changes == 'true'
-      run: |
-        echo "📦 Preparando artefatos para distribuição..."
-        mkdir -p release
-        cp -r dist/ release/
-        cp package.json README.md LICENSE release/
-        
-        cd release && find . -type f -exec sha256sum {} \; > checksums.txt
-        echo "✅ Artefatos preparados"
-      shell: bash
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
 
-    - name: Upload artefatos
-      if: steps.changes.outputs.changes == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: commit-wizard-release-v${{ steps.version.outputs.version }}
-        path: release/
-        retention-days: 90
+      - name: Instalar dependências
+        run: bun install
+
+      - name: Build do projeto
+        run: bun run build
+
+      - name: Verificar qualidade do build
+        run: |
+          echo "🔍 Verificando qualidade do build..."
+
+          if [ ! -f "dist/commit-wizard.js" ]; then
+            echo "❌ Arquivo principal não encontrado"
+            exit 1
+          fi
+
+          chmod +x dist/commit-wizard.js
+          echo "📦 Tamanho do build:"
+          ls -lh dist/
+
+          # Testar execução básica
+          timeout 10s bun run dist/commit-wizard.js --help || true
+          echo "✅ Build verificado com sucesso"
+        shell: bash
+
+      - name: Obter versão atual
+        id: version
+        run: |
+          echo "📦 Obtendo versão atual..."
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Versão atual: $CURRENT_VERSION"
+        shell: bash
+
+      - name: Obter versão publicada no NPM
+        id: published
+        run: |
+          PUBLISHED_VERSION=$(npm view @gilbert_oliveira/commit-wizard version || echo "0.0.0")
+          echo "PUBLISHED_VERSION=$PUBLISHED_VERSION" >> $GITHUB_ENV
+          echo "published=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Verificar se a versão mudou
+        id: should_publish
+        run: |
+          if [ "${{ steps.version.outputs.version }}" = "${{ steps.published.outputs.published }}" ]; then
+            echo "A versão não mudou. Pulando publicação."
+            echo "publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Versão nova detectada. Pronto para publicar."
+            echo "publish=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verificar mudanças no pacote
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            changes:
+              - 'package.json'
+              - 'src/**'
+              - 'bin/**'
+              - 'scripts/**'
+              - 'dist/**'
+              - '.commit-wizardrc'
+              - '.commit-wizard.json'
+              - 'bunfig.toml'
+              - 'tsconfig.json'
+              - 'bun.lock'
+              - 'package-lock.json'
+              - 'yarn.lock'
+
+      - name: Publicar no NPM
+        if: steps.changes.outputs.changes == 'true' && steps.should_publish.outputs.publish == 'true'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Criar Release no GitHub
+        if: steps.changes.outputs.changes == 'true' && steps.should_publish.outputs.publish == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ env.CURRENT_VERSION }}';
+            const tagName = `v${version}`;
+
+            try {
+              // Criar tag
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tagName}`,
+                sha: context.sha
+              });
+              
+              // Criar release
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName,
+                name: `Release v${version}`,
+                body: `🚀 Nova versão do Commit Wizard: v${version}
+                
+                ## Instalação
+                \`\`\`bash
+                bun install -g @gilbert_oliveira/commit-wizard
+                \`\`\`
+                
+                ## Como usar
+                \`\`\`bash
+                commit-wizard
+                \`\`\`
+                
+                Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).`,
+                draft: false,
+                prerelease: false
+              });
+              
+              console.log(`✅ Release v${version} criado com sucesso`);
+            } catch (error) {
+              console.log(`⚠️  Erro ao criar release: ${error.message}`);
+              // Não falhar o workflow se não conseguir criar release
+            }
+
+      - name: Preparar artefatos
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          echo "📦 Preparando artefatos para distribuição..."
+          mkdir -p release
+          cp -r dist/ release/
+          cp package.json README.md LICENSE release/
+
+          cd release && find . -type f -exec sha256sum {} \; > checksums.txt
+          echo "✅ Artefatos preparados"
+        shell: bash
+
+      - name: Upload artefatos
+        if: steps.changes.outputs.changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-wizard-release-v${{ steps.version.outputs.version }}
+          path: release/
+          retention-days: 90
