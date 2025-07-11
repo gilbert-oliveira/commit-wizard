@@ -32,6 +32,7 @@
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
+    "check-changes": "node -e \"const { execSync } = require('child_process'); const changed = execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).includes('package.json') || execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).match(/(src|bin|scripts|dist)\/\\.*/); console.log(changed ? '🚀 Mudanças detectadas - deploy recomendado!' : '⚠️ Nenhuma mudança significativa detectada'); process.exit(changed ? 0 : 1);\"",
     "type-check": "bun run tsc --noEmit",
     "lint": "bun run eslint --fix",
     "format": "bun run prettier --write ."

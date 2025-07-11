@@ -41,6 +41,18 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+# Verificar se há mudanças significativas no pacote
+log "Verificando mudanças no pacote..."
+if ! bun run check-changes; then
+    warn "Nenhuma mudança significativa detectada no pacote."
+    read -p "Deseja continuar mesmo assim? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        log "Release cancelado pelo usuário."
+        exit 0
+    fi
+fi
+
 # Verificar se o argumento foi fornecido
 if [ $# -eq 0 ]; then
     error "Uso: $0 [patch|minor|major]"

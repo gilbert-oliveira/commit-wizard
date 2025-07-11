@@ -57,49 +57,47 @@ jobs:
         echo "✅ Build verificado com sucesso"
       shell: bash
         
-    - name: Verificar mudança de versão
-      id: check
+    - name: Obter versão atual
+      id: version
       run: |
-        echo "🔍 Verificando mudanças de versão..."
-        
-        # Obter versão atual do package.json
+        echo "📦 Obtendo versão atual..."
         CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "📦 Versão atual: $CURRENT_VERSION"
-        
-        # Verificar se há commits anteriores
-        if git rev-parse HEAD~1 >/dev/null 2>&1; then
-          # Verificar se há mudanças no package.json
-          if git diff --quiet HEAD~1 HEAD package.json; then
-            echo "📋 Nenhuma mudança detectada no package.json"
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "🔄 Mudanças detectadas no package.json"
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          fi
-        else
-          # Primeiro commit ou branch sem histórico
-          echo "🆕 Primeiro commit ou branch sem histórico"
-          echo "changed=true" >> $GITHUB_OUTPUT
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        fi
-        
-        echo "✅ Verificação de versão concluída"
+        echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "✅ Versão atual: $CURRENT_VERSION"
       shell: bash
         
+    - name: Verificar mudanças no pacote
+      id: changes
+      uses: dorny/paths-filter@v2
+      with:
+        filters: |
+          changes:
+            - 'package.json'
+            - 'src/**'
+            - 'bin/**'
+            - 'scripts/**'
+            - 'dist/**'
+            - '.commit-wizardrc'
+            - '.commit-wizard.json'
+            - 'bunfig.toml'
+            - 'tsconfig.json'
+            - 'bun.lock'
+            - 'package-lock.json'
+            - 'yarn.lock'
+        
     - name: Publicar no NPM
-      if: steps.check.outputs.changed == 'true'
+      if: steps.changes.outputs.changes == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
     - name: Criar Release no GitHub
-      if: steps.check.outputs.changed == 'true'
+      if: steps.changes.outputs.changes == 'true'
       uses: actions/github-script@v7
       with:
         script: |
-          const version = '${{ steps.check.outputs.version }}';
+          const version = '${{ env.CURRENT_VERSION }}';
           const tagName = `v${version}`;
           
           try {
@@ -141,7 +139,7 @@ jobs:
           }
 
     - name: Preparar artefatos
-      if: steps.check.outputs.changed == 'true'
+      if: steps.changes.outputs.changes == 'true'
       run: |
         echo "📦 Preparando artefatos para distribuição..."
         mkdir -p release
@@ -153,9 +151,9 @@ jobs:
       shell: bash
 
     - name: Upload artefatos
-      if: steps.check.outputs.changed == 'true'
+      if: steps.changes.outputs.changes == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: commit-wizard-release-v${{ steps.check.outputs.version }}
+        name: commit-wizard-release-v${{ steps.version.outputs.version }}
         path: release/
         retention-days: 90
