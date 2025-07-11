@@ -252,7 +252,7 @@ describe('CLI Integration', () => {
 - **README.md**: Documentação principal
 - **docs_ai/**: Documentação técnica
 - **JSDoc**: Comentários em código
-- **Exemplos**: Pasta `examples/`
+
 
 ### Exemplo de JSDoc
 
