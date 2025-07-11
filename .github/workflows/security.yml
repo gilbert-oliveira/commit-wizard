@@ -79,17 +79,20 @@ jobs:
         run: |
           echo "🔍 Executando auditoria de segurança..."
           bun audit || echo "⚠️  Vulnerabilidades encontradas, revise as dependências"
+        shell: bash
 
       - name: Verificar dependências desatualizadas
         run: |
           echo "📋 Verificando dependências desatualizadas..."
           bun outdated || echo "✅ Todas as dependências estão atualizadas"
+        shell: bash
 
       - name: Verificar licenças
         run: |
           echo "📄 Verificando licenças das dependências..."
           # Esta verificação pode ser implementada com uma ferramenta específica
           echo "✅ Verificação de licenças concluída"
+        shell: bash
 
   code-quality:
     name: Qualidade de Código
@@ -117,6 +120,7 @@ jobs:
           find src/ -name "*.ts" -exec wc -l {} + | sort -nr
           
           echo "✅ Análise de complexidade concluída"
+        shell: bash
 
       - name: Verificar estrutura do projeto
         run: |
@@ -145,3 +149,4 @@ jobs:
           done
           
           echo "✅ Estrutura do projeto está correta"
+        shell: bash

@@ -54,6 +54,7 @@ jobs:
         # Testar execução básica
         timeout 10s bun run dist/commit-wizard.js --help || true
         echo "✅ Build verificado com sucesso"
+      shell: bash
         
     - name: Verificar mudança de versão
       id: check
@@ -102,6 +103,7 @@ jobs:
         
         cd release && sha256sum * > checksums.txt
         echo "✅ Artefatos preparados"
+      shell: bash
 
     - name: Upload artefatos
       if: steps.check.outputs.changed == 'true'

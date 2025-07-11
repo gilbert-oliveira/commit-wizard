@@ -86,6 +86,7 @@ jobs:
           echo "❌ Build falhou"
           exit 1
         fi
+      shell: bash
 
   compatibility:
     name: Teste de Compatibilidade
@@ -127,6 +128,7 @@ jobs:
             echo "❌ Build falhou"
             exit 1
           fi
+        shell: bash
 
   performance:
     name: Testes de Performance
@@ -160,6 +162,7 @@ jobs:
           else
             echo "✅ Build está dentro do limite aceitável"
           fi
+        shell: bash
 
       - name: Medir tempo de testes
         run: |
@@ -176,6 +179,7 @@ jobs:
           else
             echo "✅ Testes estão dentro do limite aceitável"
           fi
+        shell: bash
 
       - name: Verificar tamanho do bundle
         run: |
@@ -191,3 +195,4 @@ jobs:
           else
             echo "✅ Tamanho do bundle está aceitável"
           fi
+        shell: bash
