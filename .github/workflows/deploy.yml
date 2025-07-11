@@ -1,247 +1,112 @@
-name: Deploy e Testes de Ambiente
+name: Deploy
 
 on:
   push:
     branches: [main]
-  pull_request:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 env:
-  BUN_VERSION: '1.0.0'
+  BUN_VERSION: '1.2.13'
 
 jobs:
-  # Teste em Ambiente de Desenvolvimento
-  test-dev:
-    name: Teste em Dev
+  publish:
+    name: Publicar no NPM
     runs-on: ubuntu-latest
-
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
+        
+    - name: Instalar dependências
+      run: bun install
+      
+    - name: Build do projeto
+      run: bun run build
+      
+    - name: Verificar qualidade do build
+      run: |
+        echo "🔍 Verificando qualidade do build..."
+        
+        if [ ! -f "dist/commit-wizard.js" ]; then
+          echo "❌ Arquivo principal não encontrado"
+          exit 1
+        fi
+        
+        chmod +x dist/commit-wizard.js
+        echo "📦 Tamanho do build:"
+        ls -lh dist/
+        
+        # Testar execução básica
+        timeout 10s bun run dist/commit-wizard.js --help || true
+        echo "✅ Build verificado com sucesso"
+        
+    - name: Verificar mudança de versão
+      id: check
+      uses: EndBug/version-check@v2
+      with:
+        diff-search: true
+        
+    - name: Publicar no NPM
+      if: steps.check.outputs.changed == 'true'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Criar Release no GitHub
+      if: steps.check.outputs.changed == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.check.outputs.version }}
+        release_name: Release v${{ steps.check.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          🚀 Nova versão do Commit Wizard: v${{ steps.check.outputs.version }}
+          
+          ## Instalação
+          ```bash
+          npm install -g commit-wizard
+          ```
+          
+          ## Como usar
+          ```bash
+          commit-wizard
+          ```
+          
+          Para mais informações, consulte o [README](https://github.com/gilbert-oliveira/commit-wizard#readme).
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
+    - name: Preparar artefatos
+      if: steps.check.outputs.changed == 'true'
+      run: |
+        echo "📦 Preparando artefatos para distribuição..."
+        mkdir -p release
+        cp -r dist/ release/
+        cp package.json README.md LICENSE release/
+        
+        cd release && sha256sum * > checksums.txt
+        echo "✅ Artefatos preparados"
 
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Testar CLI em ambiente dev
-        run: |
-          echo "🧪 Testando CLI em ambiente de desenvolvimento..."
-
-          # Testar ajuda
-          timeout 5s bun run dist/commit-wizard.js --help || true
-
-          # Testar versão
-          timeout 5s bun run dist/commit-wizard.js --version || true
-
-          # Testar com configuração mínima
-          echo '{"openai": {"apiKey": "test-key"}}' > .commit-wizardrc
-          timeout 5s bun run dist/commit-wizard.js --dry-run || true
-
-          echo "✅ Testes de desenvolvimento concluídos"
-
-  # Teste em Ambiente de Staging
-  test-staging:
-    name: Teste em Staging
-    runs-on: ubuntu-latest
-    needs: test-dev
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Simular instalação global
-        run: |
-          echo "🚀 Simulando instalação global em staging..."
-
-          # Criar diretório de instalação global
-          sudo mkdir -p /usr/local/bin
-          sudo cp dist/commit-wizard.js /usr/local/bin/commit-wizard
-          sudo chmod +x /usr/local/bin/commit-wizard
-
-          # Testar execução global
-          commit-wizard --help || true
-          commit-wizard --version || true
-
-          echo "✅ Testes de staging concluídos"
-
-  # Deploy para Produção (apenas em main)
-  deploy-prod:
-    name: Deploy para Produção
-    runs-on: ubuntu-latest
-    needs: [test-dev, test-staging]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Build do projeto
-        run: bun run build
-
-      - name: Verificar qualidade do build
-        run: |
-          echo "🔍 Verificando qualidade do build..."
-
-          # Verificar se o arquivo principal existe
-          if [ ! -f "dist/commit-wizard.js" ]; then
-            echo "❌ Arquivo principal não encontrado"
-            exit 1
-          fi
-
-          # Verificar permissões
-          chmod +x dist/commit-wizard.js
-
-          # Verificar tamanho
-          echo "📦 Tamanho do build:"
-          ls -lh dist/
-
-          # Testar execução básica
-          timeout 10s bun run dist/commit-wizard.js --help || true
-
-          echo "✅ Build verificado com sucesso"
-
-      - name: Preparar para publicação
-        run: |
-          echo "📦 Preparando pacote para publicação..."
-
-          # Criar arquivo de distribuição
-          mkdir -p release
-          cp -r dist/ release/
-          cp package.json README.md LICENSE .commit-wizardrc release/
-
-          # Criar arquivo de checksum
-          cd release && sha256sum * > checksums.txt
-
-          echo "✅ Pacote preparado"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: commit-wizard-release
-          path: release/
-          retention-days: 30
-
-  # Teste de Compatibilidade
-  compatibility:
-    name: Teste de Compatibilidade
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18, 20, 21]
-        os: [ubuntu-latest, macos-latest]
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Executar testes básicos
-        run: |
-          echo "🧪 Testando compatibilidade com Node.js ${{ matrix.node-version }} no ${{ matrix.os }}"
-          bun test --reporter=verbose
-
-      - name: Testar build
-        run: |
-          echo "🔨 Testando build..."
-          bun run build
-
-          # Verificar se o build funciona
-          if [ -f "dist/commit-wizard.js" ]; then
-            echo "✅ Build bem-sucedido"
-          else
-            echo "❌ Build falhou"
-            exit 1
-          fi
-
-  # Teste de Performance
-  performance-test:
-    name: Teste de Performance
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Instalar dependências
-        run: bun install
-
-      - name: Medir tempo de build
-        run: |
-          echo "⚡ Medindo performance do build..."
-
-          # Medir tempo de build
-          start_time=$(date +%s)
-          bun run build
-          end_time=$(date +%s)
-
-          build_time=$((end_time - start_time))
-          echo "🕐 Tempo de build: ${build_time} segundos"
-
-          # Verificar se está dentro do limite aceitável (30 segundos)
-          if [ $build_time -gt 30 ]; then
-            echo "⚠️  Build está lento (${build_time}s > 30s)"
-          else
-            echo "✅ Build está dentro do limite aceitável"
-          fi
-
-      - name: Medir tempo de testes
-        run: |
-          echo "🧪 Medindo performance dos testes..."
-
-          start_time=$(date +%s)
-          bun test
-          end_time=$(date +%s)
-
-          test_time=$((end_time - start_time))
-          echo "🕐 Tempo de testes: ${test_time} segundos"
-
-          # Verificar se está dentro do limite aceitável (60 segundos)
-          if [ $test_time -gt 60 ]; then
-            echo "⚠️  Testes estão lentos (${test_time}s > 60s)"
-          else
-            echo "✅ Testes estão dentro do limite aceitável"
-          fi
+    - name: Upload artefatos
+      if: steps.check.outputs.changed == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: commit-wizard-release-v${{ steps.check.outputs.version }}
+        path: release/
+        retention-days: 90
