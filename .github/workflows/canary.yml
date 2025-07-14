@@ -84,7 +84,6 @@ jobs:
           max=3
           until [ $tentativas -ge $max ]
           do
-            npm version "$PKG_VERSION" --no-git-tag-version
             npm publish --tag canary --access public && break
             tentativas=$((tentativas+1))
             echo "Tentativa $tentativas falhou. Aguardando para tentar novamente..."
