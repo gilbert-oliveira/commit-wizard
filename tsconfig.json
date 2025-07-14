@@ -1,10 +1,9 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "node",
-    "outDir": "dist-node",
+    "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -20,12 +19,11 @@
   },
   "include": [
     "src/**/*",
-    "bin/commit-wizard-node.js"
+    "bin/commit-wizard.js"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "dist-node",
     "tests"
   ]
 } 
