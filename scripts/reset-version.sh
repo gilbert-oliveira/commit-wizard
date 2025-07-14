@@ -24,12 +24,15 @@ node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('packa
 echo "Limpando arquivos .changeset/*.md já aplicados..."
 find .changeset -name '*.md' -delete || true
 
+echo "Entrando novamente no modo prerelease canary..."
+npx changeset pre enter canary
+
 echo ""
-echo "✅ Versão resetada para $NOVA_VERSAO."
+echo "✅ Versão resetada para $NOVA_VERSAO e modo canary ativado."
 echo ""
 echo "Próximos passos:"
 echo "  1. git add package.json .changeset/"
-echo "  2. git commit -m 'chore: resetar versão base para $NOVA_VERSAO'"
+echo "  2. git commit -m 'chore: resetar versão base para $NOVA_VERSAO e ativar canary'"
 echo "  3. git push"
 echo ""
 echo "Agora você pode seguir com novos changesets, canaries ou releases normalmente!" 
