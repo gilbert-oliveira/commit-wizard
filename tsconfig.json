@@ -14,8 +14,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
     "baseUrl": ".",
     "paths": {
       "@core/*": ["src/core/*"]
@@ -23,7 +23,8 @@
   },
   "include": [
     "src/**/*",
-    "bin/commit-wizard.js"
+    "bin/commit-wizard.js",
+    "src/types/**/*"
   ],
   "exclude": [
     "node_modules",
