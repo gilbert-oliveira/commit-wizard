@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.4.0-canary.1
+
+### Patch Changes
+
+- ead4fc9: remover .env.example desnecessario
+
 ## 2.4.0-canary.0
 
 ### Minor Changes
