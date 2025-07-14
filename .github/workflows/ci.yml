@@ -34,7 +34,12 @@ jobs:
       - name: Executar testes unitários
         run: npm test
       - name: Executar testes com cobertura
-        run: npm run test:coverage
+        run: npm run test:ci
+      - name: Upload cobertura para Codecov
+        if: matrix.node-version == '20.x'
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Executar testes de integração
         if: matrix.node-version == '20.x'
         run: |

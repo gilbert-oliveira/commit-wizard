@@ -23,6 +23,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run tests/integration.test.ts",
+    "test:ci": "vitest run --coverage.enabled --coverage.reporter=lcov --reporter=junit --outputFile=coverage/test-report.junit.xml",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "ci:test": "vitest run",
