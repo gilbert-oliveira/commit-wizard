@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.4.0-canary.2
+
+### Patch Changes
+
+- e79ccd6: Corrigir o problema de publicação canary
+
 ## 2.4.0-canary.1
 
 ### Patch Changes
