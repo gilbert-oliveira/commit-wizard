@@ -37,26 +37,21 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Create Canary Release
-        id: canary
+      - name: Bump canary version
+        run: npx changeset version --snapshot canary
+
+      - name: Commit canary version bump
         run: |
-          npm run canary
-          echo "canary_version=$(npm run canary --silent)" >> $GITHUB_OUTPUT
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "chore: canary version bump [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+      - name: Publish canary to npm
+        run: npm publish --tag canary --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Setup Node.js for GitHub Packages
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@gilbert'
-
-      - name: Publish Canary to GitHub Packages
-        run: npm run canary:github
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment PR
         if: github.event_name == 'pull_request'
