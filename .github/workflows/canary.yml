@@ -49,26 +49,16 @@ jobs:
       - name: Bump canary version
         run: npx changeset version
 
+      # Adiciona o hash do commit na versão canary apenas antes do publish
       - name: Adicionar hash do commit na versão canary
         run: |
           HASH=$(git rev-parse --short HEAD)
           PKG_VERSION=$(node -p "require('./package.json').version")
           if [[ "$PKG_VERSION" == *canary* ]]; then
-            # Adiciona o hash como metadata semver
             NEW_VERSION="${PKG_VERSION}+${HASH}"
             node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '$NEW_VERSION'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
             echo "Versão canary ajustada para: $NEW_VERSION"
           fi
-
-      - name: Commit canary version bump
-        if: github.event_name == 'push'
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "chore: canary version bump [skip ci]" || echo "No changes to commit"
-          git pull --rebase origin ${GITHUB_REF_NAME} || echo "No remote changes to rebase"
-          git push origin HEAD:${GITHUB_REF_NAME} || echo "No changes to push"
 
       - name: Checar se versão canary já existe no npm
         id: canary_exists

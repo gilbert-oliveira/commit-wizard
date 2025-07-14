@@ -1,5 +1,12 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.4.1-canary.0
+
+### Patch Changes
+
+- fbbc4fc: ajustar tag canary
+- a292b14: Ajuste token do github package
+
 ## 2.4.0-canary.3
 
 ### Patch Changes
