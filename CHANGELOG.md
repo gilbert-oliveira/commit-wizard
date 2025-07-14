@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.10.0
+
+### Minor Changes
+
+- a4fce36: Corriger commands
+
 ## 2.9.3
 
 ### Patch Changes
