@@ -1,7 +1,6 @@
 // Importar polyfill antes de qualquer outra coisa
-import '../src/utils/polyfill';
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
@@ -253,7 +252,7 @@ describe('Commit Wizard - Testes de Integração', () => {
 
   describe('Configuração', () => {
     it('deve carregar configuração padrão', async () => {
-      const { loadConfig } = await import('../src/config/index.ts');
+      const { loadConfig } = await import('../src/config/index');
 
       const config = loadConfig();
       expect(config).toBeDefined();
@@ -281,7 +280,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         // Aguardar um pouco para garantir que o arquivo foi escrito
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        const { loadConfig } = await import('../src/config/index.ts');
+        const { loadConfig } = await import('../src/config/index');
         const config = loadConfig(configPath);
 
         // Verificações mais robustas
@@ -308,7 +307,7 @@ describe('Commit Wizard - Testes de Integração', () => {
     });
 
     it('deve validar configuração', async () => {
-      const { validateConfig } = await import('../src/config/index.ts');
+      const { validateConfig } = await import('../src/config/index');
 
       const validConfig = {
         language: 'pt',
@@ -345,7 +344,7 @@ describe('Commit Wizard - Testes de Integração', () => {
 
   describe('Funções Git', () => {
     it('deve detectar repositório Git', async () => {
-      const { isGitRepository } = await import('../src/git/index.ts');
+      const { isGitRepository } = await import('../src/git/index');
 
       // Testar fora de repositório Git
       const result = isGitRepository();
@@ -357,7 +356,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.chdir(tempRepo);
         modifyFiles(tempRepo, 'single');
 
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(typeof status.diff).toBe('string');
@@ -372,7 +371,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.chdir(tempRepo);
         modifyFiles(tempRepo, 'single');
 
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(status).toBeDefined();
@@ -386,8 +385,8 @@ describe('Commit Wizard - Testes de Integração', () => {
 
   describe('Cache', () => {
     it('deve inicializar cache', async () => {
-      const { initializeCache } = await import('../src/core/cache.ts');
-      const { loadConfig } = await import('../src/config/index.ts');
+      const { initializeCache } = await import('../src/core/cache');
+      const { loadConfig } = await import('../src/config/index');
 
       const config = loadConfig();
       initializeCache(config);
@@ -399,8 +398,8 @@ describe('Commit Wizard - Testes de Integração', () => {
 
     it('deve usar cache para commit messages', async () => {
       // Teste simplificado para verificar que o cache pode ser usado
-      const { initializeCache } = await import('../src/core/cache.ts');
-      const { loadConfig } = await import('../src/config/index.ts');
+      const { initializeCache } = await import('../src/core/cache');
+      const { loadConfig } = await import('../src/config/index');
 
       const config = loadConfig();
 
@@ -422,9 +421,9 @@ describe('Commit Wizard - Testes de Integração', () => {
         modifyFiles(tempRepo, 'complex');
 
         const { analyzeFileContext } = await import(
-          '../src/core/smart-split.ts'
+          '../src/core/smart-split'
         );
-        const { loadConfig } = await import('../src/config/index.ts');
+        const { loadConfig } = await import('../src/config/index');
 
         const config = loadConfig();
         const files = [
@@ -480,7 +479,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         modifyFiles(tempRepo, 'multiple');
 
         const { generateGroupDiff } = await import(
-          '../src/core/smart-split.ts'
+          '../src/core/smart-split'
         );
         const group = {
           id: 'test-group',
@@ -502,7 +501,7 @@ describe('Commit Wizard - Testes de Integração', () => {
 
   describe('Argumentos CLI', () => {
     it('deve parsear argumentos básicos', async () => {
-      const { parseArgs } = await import('../src/utils/args.ts');
+      const { parseArgs } = await import('../src/utils/args');
 
       const args1 = parseArgs(['--silent', '--yes']);
       expect(args1.silent).toBe(true);
@@ -518,14 +517,14 @@ describe('Commit Wizard - Testes de Integração', () => {
     });
 
     it('deve mostrar ajuda', async () => {
-      const { parseArgs } = await import('../src/utils/args.ts');
+      const { parseArgs } = await import('../src/utils/args');
 
       const args = parseArgs(['--help']);
       expect(args.help).toBe(true);
     });
 
     it('deve mostrar versão', async () => {
-      const { parseArgs } = await import('../src/utils/args.ts');
+      const { parseArgs } = await import('../src/utils/args');
 
       const args = parseArgs(['--version']);
       expect(args.version).toBe(true);
@@ -539,7 +538,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         modifyFiles(tempRepo, 'single');
 
         // Verificar que há mudanças staged
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(status.stagedFiles).toBeDefined();
@@ -555,7 +554,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.chdir(tempRepo);
         modifyFiles(tempRepo, 'multiple');
 
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(status.stagedFiles).toBeDefined();
@@ -571,7 +570,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         process.chdir(tempRepo);
         // Não modificar nenhum arquivo
 
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(status.stagedFiles).toBeDefined();
@@ -586,7 +585,7 @@ describe('Commit Wizard - Testes de Integração', () => {
   describe('Robustez e Tratamento de Erros', () => {
     it('deve verificar funcionalidade de detecção de repositório Git', async () => {
       // Apenas testar que a função funciona sem erro
-      const { isGitRepository } = await import('../src/git/index.ts');
+      const { isGitRepository } = await import('../src/git/index');
 
       // A função deve ser callable sem lançar erro
       expect(() => isGitRepository()).not.toThrow();
@@ -607,7 +606,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         const configPath = join(tempRepo, '.commit-wizardrc');
         writeFileSync(configPath, '{ invalid json }');
 
-        const { loadConfig } = await import('../src/config/index.ts');
+        const { loadConfig } = await import('../src/config/index');
 
         // Deve carregar configuração padrão sem quebrar
         expect(() => loadConfig(configPath)).not.toThrow();
@@ -637,7 +636,7 @@ describe('Commit Wizard - Testes de Integração', () => {
         writeFileSync(join(tempRepo, 'large-file.txt'), largeContent);
         execSync('git add large-file.txt', { cwd: tempRepo, stdio: 'ignore' });
 
-        const { getGitStatus } = await import('../src/git/index.ts');
+        const { getGitStatus } = await import('../src/git/index');
         const status = getGitStatus();
 
         expect(status.stagedFiles).toBeDefined();

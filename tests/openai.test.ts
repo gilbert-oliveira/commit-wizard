@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import {
   buildPrompt,
   extractCommitTypeFromMessage,
   detectCommitType,
   processOpenAIMessage,
-} from '../src/core/openai.ts';
-import type { Config } from '../src/config/index.ts';
+} from '../src/core/openai';
+import type { Config } from '../src/config/index';
 
 describe('OpenAI Module', () => {
   const mockConfig: Config = {

@@ -1,12 +1,11 @@
 // Importar polyfill antes de qualquer outra coisa
-import '../src/utils/polyfill';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   analyzeFileContext,
   generateGroupDiff,
-} from '../src/core/smart-split.ts';
-import type { Config } from '../src/config/index.ts';
+} from '../src/core/smart-split';
+import type { Config } from '../src/config/index';
 
 describe('Smart Split', () => {
   beforeEach(() => {

@@ -1,32 +1,5 @@
 version: 2
 updates:
-  # Manter dependências do Bun atualizadas
-  - package-ecosystem: 'bun'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-    open-pull-requests-limit: 10
-    reviewers:
-      - 'gilbert-oliveira'
-    assignees:
-      - 'gilbert-oliveira'
-    commit-message:
-      prefix: 'chore'
-      include: 'scope'
-    labels:
-      - 'dependencies'
-      - 'automated'
-    ignore:
-      # Ignorar atualizações de versões major que podem quebrar
-      - dependency-name: '@clack/prompts'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'simple-git'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'clipboardy'
-        update-types: ['version-update:semver-major']
-
   # Manter GitHub Actions atualizadas
   - package-ecosystem: 'github-actions'
     directory: '/'

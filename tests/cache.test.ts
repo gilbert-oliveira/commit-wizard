@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   initializeCache,
   getCachedAnalysis,
   setCachedAnalysis,
   clearCache,
   getCacheStats,
-} from '../src/core/cache.ts';
-import type { Config } from '../src/config/index.ts';
-import type { FileGroup } from '../src/core/smart-split.ts';
+} from '../src/core/cache';
+import type { Config } from '../src/config/index';
+import type { FileGroup } from '../src/core/smart-split';
 
 describe('Cache Module', () => {
   const mockConfig: Config = {

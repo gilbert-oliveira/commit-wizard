@@ -1,5 +1,5 @@
-import type { Config } from '../config/index.ts';
-import type { FileGroup } from './smart-split.ts';
+import type { Config } from '../config/index';
+import type { FileGroup } from './smart-split';
 import crypto from 'crypto';
 
 export interface CacheEntry {

@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   loadConfig,
   validateConfig,
   type Config,
-} from '../src/config/index.ts';
+} from '../src/config/index';
 import { unlinkSync, existsSync } from 'fs';
 
 describe('Config Module', () => {

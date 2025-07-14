@@ -8,7 +8,7 @@ import {
   isCancel,
 } from '@clack/prompts';
 import clipboardy from 'clipboardy';
-import type { CommitSuggestion } from '../core/openai.ts';
+import type { CommitSuggestion } from '../core/openai';
 
 export interface UIAction {
   action: 'commit' | 'edit' | 'copy' | 'cancel';
