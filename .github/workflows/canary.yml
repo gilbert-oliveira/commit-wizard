@@ -49,15 +49,9 @@ jobs:
       - name: Bump versão canary
         run: npx changeset version
 
-      - name: Hash na versão canary
-        run: |
-          HASH=$(git rev-parse --short HEAD)
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [[ "$PKG_VERSION" == *canary* ]]; then
-            NEW_VERSION="${PKG_VERSION}+${HASH}"
-            node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '$NEW_VERSION'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
-            echo "Versão canary ajustada para: $NEW_VERSION"
-          fi
+      - name: Hash do commit
+        id: hash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Verificar canary
         run: |
@@ -71,7 +65,7 @@ jobs:
         id: canary_exists
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
-          PKG_VERSION=$(node -p "require('./package.json').version")
+          PKG_VERSION=$(node -p "require('./package.json').version" | cut -d'+' -f1)
           EXISTE=$(npm view "$PKG_NAME@$PKG_VERSION" version || echo "")
           if [ "$EXISTE" = "$PKG_VERSION" ]; then
             echo "A versão $PKG_VERSION já existe no npm. Pulando publicação."
@@ -84,16 +78,22 @@ jobs:
       - name: Publicar npm
         if: steps.canary_exists.outputs.publish == 'true'
         run: |
-          # Publica apenas no npmjs, pois o npm não aceita sufixo +hash e o GitHub Packages não é utilizado
-          npm publish --tag canary --access public || {
-            if grep -q "previously published versions" /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null; then
-              echo "Versão já publicada por outro workflow. Ignorando erro.";
-              exit 0;
-            else
-              echo "Erro inesperado ao publicar.";
-              exit 1;
-            fi
-          }
+          PKG_VERSION=$(node -p "require('./package.json').version" | cut -d'+' -f1)
+          echo "Publicando versão: $PKG_VERSION"
+          tentativas=0
+          max=3
+          until [ $tentativas -ge $max ]
+          do
+            npm version "$PKG_VERSION" --no-git-tag-version
+            npm publish --tag canary --access public && break
+            tentativas=$((tentativas+1))
+            echo "Tentativa $tentativas falhou. Aguardando para tentar novamente..."
+            sleep 5
+          done
+          if [ $tentativas -eq $max ]; then
+            echo "Erro inesperado ao publicar após $max tentativas."
+            exit 1
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -109,10 +109,11 @@ jobs:
         with:
           script: |
             const pkg = require('./package.json');
-            const version = pkg.version;
+            const version = pkg.version.split('+')[0];
+            const hash = process.env.HASH || '';
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}\`\n\nObs: O pacote canary é publicado apenas no npmjs. O sufixo '+hash' não é aceito pelo npmjs, então a versão publicada será sempre no formato x.y.z-canary.n.`
+              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}${hash ? `+${hash}` : ''}\`\n\nObs: O pacote canary é publicado apenas no npmjs. O sufixo '+hash' não é aceito pelo npmjs, então a versão publicada será sempre no formato x.y.z-canary.n.`
             }); 
