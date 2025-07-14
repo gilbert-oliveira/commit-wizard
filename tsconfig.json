@@ -14,8 +14,12 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false,
-    "allowImportingTsExtensions": false
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["src/core/*"]
+    }
   },
   "include": [
     "src/**/*",

@@ -15,11 +15,13 @@
     "commit-wizard": "./bin/commit-wizard.js"
   },
   "scripts": {
-    "dev": "ts-node --loader ts-node/esm src/core/index.ts",
+    "dev": "ts-node --require tsconfig-paths/register bin/commit-wizard.js",
+    "dev:tsup": "npm run build:tsup && npm start",
     "build": "tsc --project tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "start": "node bin/commit-wizard.js",
+    "build:tsup": "tsup bin/commit-wizard.js --format esm --dts --out-dir dist --clean --minify",
+    "start": "node dist/commit-wizard.js",
     "ci:test": "vitest run",
     "ci:build": "npm run build",
     "release:patch": "./scripts/release.sh patch",
@@ -76,6 +78,8 @@
     "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
