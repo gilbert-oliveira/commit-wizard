@@ -51,6 +51,9 @@ Para mais informações, visite: https://github.com/user/commit-wizard
 `);
 }
 
+import { getVersion } from './version';
+
 export function showVersion(): void {
-  console.log('commit-wizard v2.9.5');
+  const version = getVersion();
+  console.log(`commit-wizard v${version}`);
 }
