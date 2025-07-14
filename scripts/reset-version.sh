@@ -27,8 +27,17 @@ find .changeset -name '*.md' -delete || true
 echo "Entrando novamente no modo prerelease canary..."
 npx changeset pre enter canary
 
+echo "Criando changeset patch automático para garantir bump canary..."
+cat > .changeset/reset-canary-$(date +%s).md <<EOF
+---
+"@gilbert_oliveira/commit-wizard": patch
+---
+
+reset canary
+EOF
+
 echo ""
-echo "✅ Versão resetada para $NOVA_VERSAO e modo canary ativado."
+echo "✅ Versão resetada para $NOVA_VERSAO, modo canary ativado e changeset criado."
 echo ""
 echo "Próximos passos:"
 echo "  1. git add package.json .changeset/"

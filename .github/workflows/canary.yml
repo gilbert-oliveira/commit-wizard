@@ -60,6 +60,14 @@ jobs:
             echo "Versão canary ajustada para: $NEW_VERSION"
           fi
 
+      - name: Verificar se a versão é canary
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [[ "$PKG_VERSION" != *canary* ]]; then
+            echo "A versão $PKG_VERSION não é canary. Cancelando publicação."
+            exit 0
+          fi
+
       - name: Checar se versão canary já existe no npm
         id: canary_exists
         run: |
