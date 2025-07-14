@@ -59,12 +59,28 @@ jobs:
           git pull --rebase origin ${GITHUB_REF_NAME} || echo "No remote changes to rebase"
           git push origin HEAD:${GITHUB_REF_NAME} || echo "No changes to push"
 
+      - name: Checar se versão canary já existe no npm
+        id: canary_exists
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          EXISTE=$(npm view "$PKG_NAME@$PKG_VERSION" version || echo "")
+          if [ "$EXISTE" = "$PKG_VERSION" ]; then
+            echo "A versão $PKG_VERSION já existe no npm. Pulando publicação."
+            echo "publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Versão $PKG_VERSION ainda não publicada."
+            echo "publish=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish canary to npm
+        if: steps.canary_exists.outputs.publish == 'true'
         run: npm publish --tag canary --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish canary to GitHub Packages
+        if: steps.canary_exists.outputs.publish == 'true'
         run: npm publish --tag canary --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
