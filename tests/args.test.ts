@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { parseArgs } from '../src/utils/args';
 
 describe('Args Module', () => {

@@ -1,6 +1,6 @@
 // Importar polyfill antes de qualquer outra coisa
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 
 describe('Git Functions - Escape de Caracteres Especiais', () => {
   describe('Função escapeShellArg', () => {

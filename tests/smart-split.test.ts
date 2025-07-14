@@ -1,6 +1,6 @@
 // Importar polyfill antes de qualquer outra coisa
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   analyzeFileContext,
   generateGroupDiff,
@@ -8,9 +8,9 @@ import {
 import type { Config } from '../src/config/index';
 
 // Mock para clipboardy (evita erro ESM no Jest)
-jest.mock('clipboardy', () => ({
+vi.mock('clipboardy', () => ({
   __esModule: true,
-  default: { write: jest.fn(), read: jest.fn() },
+  default: { write: vi.fn(), read: vi.fn() },
 }));
 
 describe('Smart Split', () => {
