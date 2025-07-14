@@ -38,7 +38,12 @@ jobs:
         run: npm run build
 
       - name: Enter pre mode for canary
-        run: npx changeset pre enter canary
+        run: |
+          if [ ! -f .changeset/pre.json ]; then
+            npx changeset pre enter canary
+          else
+            echo "Já está em pre mode, pulando changeset pre enter"
+          fi
 
       - name: Bump canary version
         run: npx changeset version
