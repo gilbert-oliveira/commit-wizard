@@ -50,6 +50,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "chore: canary version bump [skip ci]" || echo "No changes to commit"
+          git pull --rebase origin ${GITHUB_REF_NAME} || echo "No remote changes to rebase"
           git push origin HEAD:${GITHUB_REF_NAME} || echo "No changes to push"
 
       - name: Publish canary to npm
