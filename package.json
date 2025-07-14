@@ -22,6 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run tests/integration.test.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "ci:test": "vitest run",
