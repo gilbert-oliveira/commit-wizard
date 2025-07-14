@@ -1,0 +1,60 @@
+name: Validate Changesets
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  validate:
+    name: Validate Changesets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check for Changesets
+        run: npx changeset status --since=origin/main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            try {
+              const changesetFiles = fs.readdirSync('.changeset').filter(file => file.endsWith('.md'));
+              
+              if (changesetFiles.length === 0) {
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `⚠️ **Missing Changeset**\n\nThis PR doesn't have a changeset. If this PR should trigger a release, please add a changeset by running:\n\`\`\`bash\nnpx changeset\n\`\`\`\n\nIf this PR shouldn't trigger a release, you can ignore this message.`
+                });
+              } else {
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `✅ **Changeset Found**\n\nThis PR has ${changesetFiles.length} changeset(s) and will trigger a release when merged.`
+                });
+              }
+            } catch (error) {
+              console.log('Error checking changesets:', error);
+            } 

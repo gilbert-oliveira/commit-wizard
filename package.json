@@ -3,7 +3,7 @@
   "displayName": "Commit Wizard",
   "publisher": "gilbert-oliveira",
   "description": "CLI inteligente para gerar mensagens de commit usando OpenAI",
-  "version": "2.1.0",
+  "version": "2.9.0",
   "categories": [
     "Other",
     "SCM Providers"
@@ -12,7 +12,7 @@
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/commit-wizard.js"
+    "commit-wizard": "dist/commit-wizard.js"
   },
   "scripts": {
     "dev": "npm run build && node dist/commit-wizard.js",
@@ -28,9 +28,16 @@
     "format": "prettier --write .",
     "ci:test": "vitest run",
     "ci:build": "npm run build",
+    "changeset": "changeset",
+    "changeset:create": "node scripts/create-changeset.js",
+    "version": "changeset version",
+    "release": "changeset publish",
+    "release:github": "npm run build && npm publish --registry=https://npm.pkg.github.com",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
+    "canary": "npm run build && npm publish --tag canary",
+    "canary:github": "npm run build && npm publish --registry=https://npm.pkg.github.com --tag canary",
     "check-changes": "node -e \"const { execSync } = require('child_process'); const changed = execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).includes('package.json') || execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).match(/(src|bin|scripts|dist)/\\.*/); console.log(changed ? '🚀 Mudanças detectadas - deploy recomendado!' : '⚠️ Nenhuma mudança significativa detectada'); process.exit(changed ? 0 : 1);\""
   },
   "keywords": [
@@ -44,14 +51,6 @@
   ],
   "author": "Gilbert <contato@gilbert.dev.br>",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gilbert-oliveira/commit-wizard.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gilbert-oliveira/commit-wizard/issues"
-  },
-  "homepage": "https://github.com/gilbert-oliveira/commit-wizard#readme",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -71,6 +70,7 @@
     "simple-git": "^3.25.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.5",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.13",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
@@ -92,6 +92,15 @@
   },
   "preferGlobal": true,
   "publishConfig": {
-    "access": "public"
-  }
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gilbert-oliveira/commit-wizard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gilbert-oliveira/commit-wizard/issues"
+  },
+  "homepage": "https://github.com/gilbert-oliveira/commit-wizard#readme"
 }

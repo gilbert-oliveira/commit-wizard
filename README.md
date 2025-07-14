@@ -379,6 +379,57 @@ npm run build
 
 ---
 
+## 🚀 Fluxo Automatizado de Publicação
+
+O Commit Wizard utiliza um sistema automatizado de CI/CD para publicação no npm e GitHub Packages.
+
+### 📦 Versões Canary (PRs)
+
+- **Trigger**: Push em branches que não sejam `main` ou `master`
+- **Versão**: Formato `x.y.z-canary.<hash>` (ex: `2.4.0-canary.abc123`)
+- **Publicação**: 
+  - npm: `npm install @gilbert_oliveira/commit-wizard@canary`
+  - GitHub Packages: `npm install @gilbert_oliveira/commit-wizard@canary --registry=https://npm.pkg.github.com`
+- **Comentário**: Automático na PR com instruções de instalação
+
+### 🏷️ Versões Estáveis (Main)
+
+- **Trigger**: Push na branch `main` ou `master`
+- **Versão**: Formato semântico `x.y.z` (ex: `2.4.0`)
+- **Publicação**: 
+  - npm: `npm install -g @gilbert_oliveira/commit-wizard`
+  - GitHub Packages: `npm install -g @gilbert_oliveira/commit-wizard --registry=https://npm.pkg.github.com`
+- **Changelog**: Gerado automaticamente via Changesets
+
+### 🔧 Scripts de Desenvolvimento
+
+```bash
+# Changesets
+npm run changeset              # Criar changeset
+npm run version               # Bump de versão
+npm run release              # Publicar no npm
+npm run release:github       # Publicar no GitHub Packages
+
+# Canary
+npm run canary               # Publicar canary no npm
+npm run canary:github        # Publicar canary no GitHub Packages
+
+# Release manual
+npm run release:patch        # Bump patch
+npm run release:minor        # Bump minor
+npm run release:major        # Bump major
+```
+
+### 📋 Workflows GitHub Actions
+
+- **`.github/workflows/canary.yml`**: Publicação canary em PRs
+- **`.github/workflows/release.yml`**: Publicação estável na main
+- **`.github/workflows/validate-changesets.yml`**: Validação de changesets
+- **`.github/workflows/ci.yml`**: Testes e build
+- **`.github/workflows/deploy.yml`**: Deploy manual
+
+---
+
 ## 🤝 Contribuição
 
 1. Fork o projeto
