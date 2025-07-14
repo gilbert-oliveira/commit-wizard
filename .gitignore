@@ -12,10 +12,6 @@ build/
 *.tgz
 *.tar.gz
 
-# Bun specific
-.bun/
-bun.lockb
-
 # Environment variables
 .env
 .env.local
