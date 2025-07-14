@@ -17,7 +17,7 @@ jobs:
     name: Canary Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -29,16 +29,16 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
+      - name: Instalar deps
         run: npm ci
 
-      - name: Run Tests
+      - name: Testes
         run: npm test
 
       - name: Build
         run: npm run build
 
-      - name: Enter pre mode for canary
+      - name: Pre mode canary
         run: |
           if [ ! -f .changeset/pre.json ]; then
             npx changeset pre enter canary
@@ -46,11 +46,10 @@ jobs:
             echo "Já está em pre mode, pulando changeset pre enter"
           fi
 
-      - name: Bump canary version
+      - name: Bump versão canary
         run: npx changeset version
 
-      # Adiciona o hash do commit na versão canary apenas antes do publish
-      - name: Adicionar hash do commit na versão canary
+      - name: Hash na versão canary
         run: |
           HASH=$(git rev-parse --short HEAD)
           PKG_VERSION=$(node -p "require('./package.json').version")
@@ -60,7 +59,7 @@ jobs:
             echo "Versão canary ajustada para: $NEW_VERSION"
           fi
 
-      - name: Verificar se a versão é canary
+      - name: Verificar canary
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
           if [[ "$PKG_VERSION" != *canary* ]]; then
@@ -68,7 +67,7 @@ jobs:
             exit 0
           fi
 
-      - name: Checar se versão canary já existe no npm
+      - name: Checar versão npm
         id: canary_exists
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
@@ -82,9 +81,10 @@ jobs:
             echo "publish=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish canary to npm
+      - name: Publicar npm
         if: steps.canary_exists.outputs.publish == 'true'
         run: |
+          # Publica apenas no npmjs, pois o npm não aceita sufixo +hash e o GitHub Packages não é utilizado
           npm publish --tag canary --access public || {
             if grep -q "previously published versions" /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null; then
               echo "Versão já publicada por outro workflow. Ignorando erro.";
@@ -97,26 +97,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish canary to GitHub Packages
-        if: steps.canary_exists.outputs.publish == 'true'
-        run: |
-          npm publish --tag canary --registry=https://npm.pkg.github.com || {
-            if grep -q "previously published versions" /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null; then
-              echo "Versão já publicada por outro workflow (GitHub Packages). Ignorando erro.";
-              exit 0;
-            else
-              echo "Erro inesperado ao publicar no GitHub Packages.";
-              exit 1;
-            fi
-          }
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      # Removido o passo de publicação no GitHub Packages pois não é necessário
 
-      - name: Exit pre mode for canary
+      - name: Sair pre mode
         if: always()
         run: npx changeset pre exit
 
-      - name: Comment PR
+      - name: Comentar PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -127,5 +114,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 Canary publicado: \n- **npm:** \`npm install ${pkg.name}@${version}\`\n- **GitHub Packages:** \`npm install @gilbert_oliveira/commit-wizard@${version} --registry=https://npm.pkg.github.com\`\n> Versão: \`${version}\``
+              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}\`\n\nObs: O pacote canary é publicado apenas no npmjs. O sufixo '+hash' não é aceito pelo npmjs, então a versão publicada será sempre no formato x.y.z-canary.n.`
             }); 
