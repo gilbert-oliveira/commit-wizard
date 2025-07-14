@@ -55,6 +55,19 @@ jobs:
       - name: Bump versão canary
         run: npx changeset version
 
+      - name: Forçar incremento do canary
+        run: |
+          PKG_FILE=package.json
+          VERSION=$(jq -r .version $PKG_FILE)
+          if [[ "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+-canary\.)([0-9]+)$ ]]; then
+            BASE="${BASH_REMATCH[1]}"
+            NUM="${BASH_REMATCH[2]}"
+            NEW_NUM=$((NUM+1))
+            NEW_VERSION="${BASE}${NEW_NUM}"
+            jq ".version = \"$NEW_VERSION\"" $PKG_FILE > tmp.$$.json && mv tmp.$$.json $PKG_FILE
+            echo "Versão canary forçada para: $NEW_VERSION"
+          fi
+
       # Removido step de hash/manual version
 
       - name: Verificar canary
