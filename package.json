@@ -15,6 +15,7 @@
     "commit-wizard": "./dist/commit-wizard.js"
   },
   "scripts": {
+    "dev": "npm run build && node dist/commit-wizard.js",
     "build": "tsup src/bin/commit-wizard.ts --format esm --dts --out-dir dist --clean --minify --splitting false --shims",
     "build:tsc": "tsc --project tsconfig.json",
     "start": "node dist/commit-wizard.js",
