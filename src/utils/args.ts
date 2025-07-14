@@ -1,7 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 export interface CLIArgs {
   silent: boolean;
   yes: boolean;
@@ -56,13 +52,5 @@ Para mais informações, visite: https://github.com/user/commit-wizard
 }
 
 export function showVersion(): void {
-  try {
-    // Lê a versão do package.json
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const packageJsonPath = path.join(__dirname, '../../package.json');
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-    console.log(`commit-wizard v${packageJson.version}`);
-  } catch {
-    console.log('commit-wizard');
-  }
+  console.log('commit-wizard v2.9.4');
 }

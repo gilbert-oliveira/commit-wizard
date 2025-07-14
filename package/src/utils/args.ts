@@ -52,5 +52,5 @@ Para mais informações, visite: https://github.com/user/commit-wizard
 }
 
 export function showVersion(): void {
-  console.log('commit-wizard v1.0.0');
+  console.log('commit-wizard v2.9.4');
 }
