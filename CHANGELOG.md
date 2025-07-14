@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.12.0
+
+### Minor Changes
+
+- 1a928f9: eol
+
 ## 2.11.0
 
 ### Minor Changes
