@@ -27,9 +27,9 @@ Descreva as mudanças incluídas neste PR.
 Descreva os passos para testar suas mudanças:
 
 1. Clone o repositório
-2. Instale as dependências: `bun install`
-3. Execute os testes: `bun test`
-4. Teste a funcionalidade: `bun run dev`
+2. Instale as dependências: `npm install`
+3. Execute os testes: `npm run test:node`
+4. Teste a funcionalidade: `npm run dev:node`
 
 ## 📸 Screenshots (se aplicável)
 

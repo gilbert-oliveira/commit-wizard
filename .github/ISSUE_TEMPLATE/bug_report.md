@@ -27,7 +27,6 @@ Se aplicável, adicione screenshots para ajudar a explicar seu problema.
 
 - OS: [ex: Ubuntu 22.04]
 - Node.js: [ex: 18.17.0]
-- Bun: [ex: 1.0.0]
 - commit-wizard: [ex: 1.0.0]
 
 **Configuração**
