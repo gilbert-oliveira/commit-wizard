@@ -38,10 +38,10 @@
 ### Instalação
 
 ```bash
-# Via npm
 npm install -g @gilbert_oliveira/commit-wizard
+```
 
-# Via npx
+```bash
 npx @gilbert_oliveira/commit-wizard
 ```
 
@@ -63,24 +63,23 @@ cd commit-wizard
 npm install
 
 # Execute testes
-npm run test:node
+npm run test
 
 # Execute em modo desenvolvimento
-npm run dev:node
+npm run dev
 ```
 
 ### Scripts Disponíveis
 
 ```bash
-# Desenvolvimento
-npm run dev:node          # Executar em modo dev
-npm run build:node        # Build do projeto
-npm run test:node         # Executar testes
+npm run dev          # Executar em modo dev
+npm run build        # Build do projeto
+npm run test         # Executar testes
 npm run format       # Formatar código
 
 # CI/CD Local
-npm run ci:test:node      # Testes com verbose
-npm run ci:build:node     # Build para CI
+npm run ci:test      # Testes com verbose
+npm run ci:build     # Build para CI
 npm run ci:lint      # Linting
 # Auditoria de segurança pode ser feita com npm audit
 
@@ -126,7 +125,7 @@ npm run release:major # Release major
 
 1. Fork do repositório
 2. Criar branch: `git checkout -b feature/nova-funcionalidade`
-3. Desenvolver e testar: `npm run test:node`
+3. Desenvolver e testar: `npm run test`
 4. Commit seguindo conventional commits
 5. Push e criar Pull Request
 

@@ -66,7 +66,6 @@ Um CLI desenvolvido para Node.js que analisa suas mudanças no Git e gera mensag
 ### Instalação Global
 
 ```bash
-# Com Node.js
 npm install -g @gilbert_oliveira/commit-wizard
 ```
 
@@ -359,8 +358,7 @@ commit-wizard --split
 ### Executar Testes
 
 ```bash
-# Com Node.js
-npm run test:node           # Todos os testes
+npm run test           # Todos os testes
 ```
 
 ### Desenvolvimento Local
@@ -369,16 +367,14 @@ npm run test:node           # Todos os testes
 git clone https://github.com/gilbert-oliveira/commit-wizard
 cd commit-wizard
 
-# Com Node.js
 npm install
-npm run dev:node
+npm run dev
 ```
 
 ### Build
 
 ```bash
-# Com Node.js
-npm run build:node
+npm run build
 ```
 
 ---

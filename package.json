@@ -12,16 +12,15 @@
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/commit-wizard.js",
-    "commit-wizard-node": "./bin/commit-wizard-node.js"
+    "commit-wizard": "./bin/commit-wizard.js"
   },
   "scripts": {
-    "dev:node": "node bin/commit-wizard-node.js",
-    "build:node": "tsc --project tsconfig.node.json",
-    "test:node": "node --test tests/",
-    "start:node": "node bin/commit-wizard-node.js",
-    "ci:test:node": "node --test tests/",
-    "ci:build:node": "npm run build:node",
+    "dev": "node bin/commit-wizard.js",
+    "build": "tsc --project tsconfig.json",
+    "test": "node --test tests/",
+    "start": "node bin/commit-wizard.js",
+    "ci:test": "node --test tests/",
+    "ci:build": "npm run build",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",

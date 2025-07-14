@@ -32,12 +32,12 @@ Obrigado por considerar contribuir para o commit-wizard! 🎉
 3. **Execute testes**
 
    ```bash
-   npm run test:node
+   npm run test
    ```
 
 4. **Execute em modo desenvolvimento**
    ```bash
-   npm run dev:node
+   npm run dev
    ```
 
 ## 🔄 Fluxo de Trabalho
@@ -76,7 +76,7 @@ git checkout -b docs/atualizacao-documentacao
 
 ```bash
 # Execute todos os testes
-npm run test:node
+npm run test
 
 # Execute testes específicos
 node --test tests/unit.test.ts
@@ -204,7 +204,7 @@ git commit -m "wip"
 
 ```bash
 # Todos os testes
-npm run test:node
+npm run test
 
 # Testes específicos
 node --test tests/unit.test.ts
@@ -282,9 +282,9 @@ export async function generateCommitMessage(
 
 ```bash
 # Desenvolvimento
-npm run dev:node          # Executar em modo dev
+npm run dev          # Executar em modo dev
 npm run build        # Build do projeto
-npm run test:node         # Executar testes
+npm run test         # Executar testes
 npm run format       # Formatar código
 
 # CI/CD Local
