@@ -2,7 +2,7 @@
 
 > **Gere mensagens de commit inteligentes usando IA com Node.js**
 
-Este é o guia para usar o Commit Wizard com Node.js (sem Bun).
+Este é o guia para usar o Commit Wizard com Node.js.
 
 ## 🚀 Instalação
 
@@ -146,16 +146,6 @@ export OPENAI_API_KEY="sua-chave-aqui"
 ```bash
 git init
 ```
-
-## 📊 Comparação: Bun vs Node.js
-
-| Funcionalidade | Bun | Node.js |
-|----------------|-----|---------|
-| **Performance** | ⚡ Mais rápido | 🐌 Mais lento |
-| **Compatibilidade** | 🔄 Limitada | ✅ Universal |
-| **Instalação** | 📦 Simples | 📦 Padrão |
-| **Dependências** | 🚀 Rápido | ⏳ Normal |
-| **Testes** | 🧪 Rápido | 🧪 Normal |
 
 ## 🤝 Contribuição
 

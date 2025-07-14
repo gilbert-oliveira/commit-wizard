@@ -20,7 +20,7 @@ Por favor, inclua as seguintes informações no seu reporte:
 - **Reprodução**: Passos para reproduzir o problema
 - **Impacto**: Possível impacto da vulnerabilidade
 - **Versão**: Versão do commit-wizard afetada
-- **Ambiente**: Sistema operacional, Node.js, Bun
+- **Ambiente**: Sistema operacional, Node.js
 - **Configuração**: Arquivo `.commit-wizardrc` (se relevante)
 
 ### Exemplo de Reporte
@@ -39,7 +39,7 @@ Impacto:
 Execução arbitrária de comandos com privilégios elevados.
 
 Versão: 1.0.0
-Ambiente: Ubuntu 22.04, Node.js 18, Bun 1.0.0
+Ambiente: Ubuntu 22.04, Node.js 18
 ```
 
 ## 🔍 Processo de Resposta

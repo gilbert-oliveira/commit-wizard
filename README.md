@@ -9,7 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Um CLI desenvolvido com Bun.js/Node.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
+Um CLI desenvolvido para Node.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
 
 ## 📊 Status do Projeto
 
@@ -60,15 +60,12 @@ Um CLI desenvolvido com Bun.js/Node.js que analisa suas mudanças no Git e gera 
 
 ### Pré-requisitos
 
-- [Bun](https://bun.sh/) instalado (recomendado) OU Node.js 18+
+- Node.js 18+ instalado
 - Chave da API OpenAI
 
 ### Instalação Global
 
 ```bash
-# Com Bun (recomendado)
-bun install -g @gilbert_oliveira/commit-wizard
-
 # Com Node.js
 npm install -g @gilbert_oliveira/commit-wizard
 ```
@@ -362,11 +359,6 @@ commit-wizard --split
 ### Executar Testes
 
 ```bash
-# Com Bun (recomendado)
-bun test                    # Todos os testes
-bun test src/__tests__      # Testes unitários
-bun test tests/             # Testes de integração
-
 # Com Node.js
 npm run test:node           # Todos os testes
 ```
@@ -377,10 +369,6 @@ npm run test:node           # Todos os testes
 git clone https://github.com/gilbert-oliveira/commit-wizard
 cd commit-wizard
 
-# Com Bun (recomendado)
-bun install
-bun run dev
-
 # Com Node.js
 npm install
 npm run dev:node
@@ -389,9 +377,6 @@ npm run dev:node
 ### Build
 
 ```bash
-# Com Bun
-bun run build
-
 # Com Node.js
 npm run build:node
 ```
@@ -455,47 +440,8 @@ MIT © [Gilbert Oliveira](https://github.com/gilbert-oliveira)
 
 - [Documentação da OpenAI](https://platform.openai.com/docs)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [Bun.js](https://bun.sh/) (recomendado)
 - [Node.js](https://nodejs.org/) (alternativa)
 - [📋 Guia para Contribuidores](.github/README.md) - Informações sobre desenvolvimento e CI/CD
-
----
-
-## 🔄 Suporte Multi-Runtime
-
-O Commit Wizard agora suporta tanto **Bun** quanto **Node.js**:
-
-### 🚀 Bun (Recomendado)
-- **Performance**: Mais rápido para desenvolvimento e build
-- **Compatibilidade**: Suporte nativo a TypeScript
-- **Dependências**: Instalação e cache mais rápidos
-
-```bash
-bun install -g @gilbert_oliveira/commit-wizard
-bun run dev
-```
-
-### 📦 Node.js (Alternativa)
-- **Universalidade**: Funciona em qualquer ambiente
-- **Compatibilidade**: Suporte amplo a ferramentas
-- **Familiaridade**: Interface padrão do ecossistema
-
-```bash
-npm install -g @gilbert_oliveira/commit-wizard
-npm run dev:node
-```
-
-### 📊 Comparação
-
-| Funcionalidade | Bun | Node.js |
-|----------------|-----|---------|
-| **Performance** | ⚡ Mais rápido | 🐌 Mais lento |
-| **Compatibilidade** | 🔄 Limitada | ✅ Universal |
-| **Instalação** | 📦 Simples | 📦 Padrão |
-| **Dependências** | 🚀 Rápido | ⏳ Normal |
-| **Testes** | 🧪 Rápido | 🧪 Normal |
-
-> **💡 Dica**: Use Bun para desenvolvimento e Node.js para ambientes de produção que não suportam Bun.
 
 ---
 
