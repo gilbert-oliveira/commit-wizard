@@ -1,5 +1,14 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.9.1-canary.0
+
+### Patch Changes
+
+- a0a8cc0: ajustar version canary
+- 5d55e6a: remover acionamento em pull_request para canary
+- e2b4162: reset canary
+- c0b2f4e: corrigir release
+
 ## 2.4.1-canary.0
 
 ### Patch Changes
