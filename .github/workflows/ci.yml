@@ -6,77 +6,55 @@ on:
   pull_request:
     branches: [main, develop]
 
-env:
-  BUN_VERSION: '1.2.13'
-
 jobs:
   test:
     name: Testes e Qualidade
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
       - name: Cache dependências
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.bun/install/cache
-            node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-bun-
-
+            ${{ runner.os }}-node-
       - name: Instalar dependências
-        run: bun install
-
+        run: npm ci
       - name: Verificar tipos TypeScript
-        run: bun run tsc --noEmit
-
+        run: npm run typecheck || npx tsc --noEmit
       - name: Executar testes unitários
-        run: bun test
-
+        run: npm test
       - name: Executar testes com cobertura
-        run: bun run test:coverage
-
+        run: npm run test:coverage
       - name: Executar testes de integração
         if: matrix.node-version == '20.x'
         run: |
           git config --global user.name "CI Bot"
           git config --global user.email "ci@example.com"
-          bun test tests/integration.test.ts
-
+          npm run test:integration
       - name: Build do projeto
-        run: bun run build
-
+        run: npm run build
       - name: Verificar build
         run: |
           if [ -f "dist/commit-wizard.js" ]; then
             echo "✅ Build gerado com sucesso"
             ls -la dist/
             chmod +x dist/commit-wizard.js
-            timeout 10s bun run dist/commit-wizard.js --help || true
+            timeout 10s node dist/commit-wizard.js --help || true
           else
             echo "❌ Build falhou"
             exit 1
           fi
         shell: bash
-
   compatibility:
     name: Teste de Compatibilidade
     runs-on: ${{ matrix.os }}
@@ -87,30 +65,20 @@ jobs:
         exclude:
           - os: windows-latest
             node-version: 18
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
       - name: Instalar dependências
-        run: bun install
-
+        run: npm ci
       - name: Executar testes básicos
-        run: bun test
-
+        run: npm test
       - name: Testar build
         run: |
-          bun run build
+          npm run build
           if [ -f "dist/commit-wizard.js" ]; then
             echo "✅ Build bem-sucedido no ${{ matrix.os }} com Node.js ${{ matrix.node-version }}"
           else
@@ -118,33 +86,27 @@ jobs:
             exit 1
           fi
         shell: bash
-
   performance:
     name: Testes de Performance
     runs-on: ubuntu-latest
     needs: test
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: ${{ env.BUN_VERSION }}
-
+          node-version: '20.x'
       - name: Instalar dependências
-        run: bun install
-
+        run: npm ci
       - name: Medir tempo de build
         run: |
           echo "⚡ Medindo performance do build..."
           start_time=$(date +%s)
-          bun run build
+          npm run build
           end_time=$(date +%s)
           build_time=$((end_time - start_time))
           echo "🕐 Tempo de build: ${build_time} segundos"
-
           if [ $build_time -gt 30 ]; then
             echo "⚠️  Build está lento (${build_time}s > 30s)"
             exit 1
@@ -152,16 +114,14 @@ jobs:
             echo "✅ Build está dentro do limite aceitável"
           fi
         shell: bash
-
       - name: Medir tempo de testes
         run: |
           echo "🧪 Medindo performance dos testes..."
           start_time=$(date +%s)
-          bun test
+          npm test
           end_time=$(date +%s)
           test_time=$((end_time - start_time))
           echo "🕐 Tempo de testes: ${test_time} segundos"
-
           if [ $test_time -gt 60 ]; then
             echo "⚠️  Testes estão lentos (${test_time}s > 60s)"
             exit 1
@@ -169,15 +129,12 @@ jobs:
             echo "✅ Testes estão dentro do limite aceitável"
           fi
         shell: bash
-
       - name: Verificar tamanho do bundle
         run: |
           echo "📦 Tamanho do bundle gerado:"
           ls -lh dist/
           bundle_size=$(stat -c%s "dist/commit-wizard.js")
           echo "📊 Tamanho: ${bundle_size} bytes"
-
-          # Limite de 5MB para o bundle
           if [ $bundle_size -gt 5242880 ]; then
             echo "⚠️  Bundle muito grande (${bundle_size} bytes > 5MB)"
             exit 1
