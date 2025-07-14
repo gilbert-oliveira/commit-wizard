@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { intro, outro, log } from '@clack/prompts';
-import { main } from '../src/core/index.js';
+import { main } from '@core/index';
 import { parseArgs, showHelp, showVersion } from '../src/utils/args.js';
 
 async function run() {
