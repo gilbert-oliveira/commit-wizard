@@ -3,7 +3,7 @@
   "displayName": "Commit Wizard",
   "publisher": "gilbert-oliveira",
   "description": "CLI inteligente para gerar mensagens de commit usando OpenAI",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "categories": [
     "Other",
     "SCM Providers"
