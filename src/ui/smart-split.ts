@@ -1,5 +1,5 @@
 import { select, confirm, log, note, isCancel } from '@clack/prompts';
-import type { FileGroup } from '../core/smart-split.ts';
+import type { FileGroup } from '../core/smart-split';
 
 export interface SmartSplitAction {
   action: 'proceed' | 'manual' | 'cancel';

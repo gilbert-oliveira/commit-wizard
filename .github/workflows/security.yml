@@ -8,24 +8,18 @@ on:
   schedule:
     - cron: '0 2 * * 1' # Toda segunda-feira às 2h
 
-env:
-  BUN_VERSION: '1.2.13'
-
 jobs:
   dependency-review:
     name: Análise de Dependências
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
-
   codeql:
     name: Análise CodeQL
     runs-on: ubuntu-latest
@@ -33,100 +27,77 @@ jobs:
       actions: read
       contents: read
       security-events: write
-
     strategy:
       fail-fast: false
       matrix:
         language: ['javascript']
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: ${{ env.BUN_VERSION }}
-
+          node-version: '20.x'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-
   security-audit:
     name: Auditoria de Segurança
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: ${{ env.BUN_VERSION }}
-
+          node-version: '20.x'
       - name: Instalar dependências
-        run: bun install
-
+        run: npm ci
       - name: Auditoria de segurança
         run: |
           echo "🔍 Executando auditoria de segurança..."
-          bun audit || echo "⚠️  Vulnerabilidades encontradas, revise as dependências"
+          npm audit || echo "⚠️  Vulnerabilidades encontradas, revise as dependências"
         shell: bash
-
       - name: Verificar dependências desatualizadas
         run: |
           echo "📋 Verificando dependências desatualizadas..."
-          bun outdated || echo "✅ Todas as dependências estão atualizadas"
+          npm outdated || echo "✅ Todas as dependências estão atualizadas"
         shell: bash
-
       - name: Verificar licenças
         run: |
           echo "📄 Verificando licenças das dependências..."
           # Esta verificação pode ser implementada com uma ferramenta específica
           echo "✅ Verificação de licenças concluída"
         shell: bash
-
   code-quality:
     name: Qualidade de Código
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: ${{ env.BUN_VERSION }}
-
+          node-version: '20.x'
       - name: Instalar dependências
-        run: bun install
-
+        run: npm ci
       - name: Análise de complexidade
         run: |
           echo "📊 Análise de complexidade do código..."
           echo "📁 Arquivos TypeScript no projeto:"
           find src/ -name "*.ts" -exec echo "  - {}" \;
-
           echo "📏 Tamanho dos arquivos:"
           find src/ -name "*.ts" -exec wc -l {} + | sort -nr
-
           echo "✅ Análise de complexidade concluída"
         shell: bash
-
       - name: Verificar estrutura do projeto
         run: |
           echo "🏗️  Verificando estrutura do projeto..."
-
-          # Verificar se todos os arquivos principais existem
           required_files=("package.json" "tsconfig.json" "README.md" "LICENSE")
           for file in "${required_files[@]}"; do
             if [ -f "$file" ]; then
@@ -136,8 +107,6 @@ jobs:
               exit 1
             fi
           done
-
-          # Verificar estrutura de diretórios
           required_dirs=("src" "tests")
           for dir in "${required_dirs[@]}"; do
             if [ -d "$dir" ]; then
@@ -147,6 +116,5 @@ jobs:
               exit 1
             fi
           done
-
           echo "✅ Estrutura do projeto está correta"
         shell: bash

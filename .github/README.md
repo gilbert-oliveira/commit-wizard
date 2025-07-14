@@ -9,7 +9,6 @@
 [![Deploy](https://github.com/gilbert-oliveira/commit-wizard/workflows/Deploy/badge.svg)](https://github.com/gilbert-oliveira/commit-wizard/actions)
 [![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Bun](https://img.shields.io/badge/Bun-1.0.0-000000?style=flat&logo=bun)](https://bun.sh)
 
 ## 🚀 Status do CI/CD
 
@@ -39,14 +38,11 @@
 ### Instalação
 
 ```bash
-# Via npm
 npm install -g @gilbert_oliveira/commit-wizard
+```
 
-# Via npx
+```bash
 npx @gilbert_oliveira/commit-wizard
-
-# Via bun
-bun add -g @gilbert_oliveira/commit-wizard
 ```
 
 ## 🔧 Desenvolvimento
@@ -54,7 +50,6 @@ bun add -g @gilbert_oliveira/commit-wizard
 ### Pré-requisitos
 
 - Node.js 18+
-- Bun 1.0.0+
 - Git
 
 ### Setup Local
@@ -65,34 +60,33 @@ git clone https://github.com/gilbert-oliveira/commit-wizard.git
 cd commit-wizard
 
 # Instale dependências
-bun install
+npm install
 
 # Execute testes
-bun test
+npm run test
 
 # Execute em modo desenvolvimento
-bun run dev
+npm run dev
 ```
 
 ### Scripts Disponíveis
 
 ```bash
-# Desenvolvimento
-bun run dev          # Executar em modo dev
-bun run build        # Build do projeto
-bun run test         # Executar testes
-bun run format       # Formatar código
+npm run dev          # Executar em modo dev
+npm run build        # Build do projeto
+npm run test         # Executar testes
+npm run format       # Formatar código
 
 # CI/CD Local
-bun run ci:test      # Testes com verbose
-bun run ci:build     # Build para CI
-bun run ci:lint      # Linting
-bun run ci:security  # Auditoria de segurança
+npm run ci:test      # Testes com verbose
+npm run ci:build     # Build para CI
+npm run ci:lint      # Linting
+# Auditoria de segurança pode ser feita com npm audit
 
 # Release
-bun run release:patch # Release patch
-bun run release:minor # Release minor
-bun run release:major # Release major
+npm run release:patch # Release patch
+npm run release:minor # Release minor
+npm run release:major # Release major
 ```
 
 ## 🛡️ Segurança
@@ -116,7 +110,6 @@ bun run release:major # Release major
 
 - **Build Time**: ~15s
 - **Test Time**: ~25s
-- **Bundle Size**: ~500KB
 - **Dependencies**: 4 principais
 
 ### Qualidade
@@ -132,7 +125,7 @@ bun run release:major # Release major
 
 1. Fork do repositório
 2. Criar branch: `git checkout -b feature/nova-funcionalidade`
-3. Desenvolver e testar: `bun test`
+3. Desenvolver e testar: `npm run test`
 4. Commit seguindo conventional commits
 5. Push e criar Pull Request
 
@@ -174,7 +167,7 @@ bun run release:major # Release major
 
 - Siga o [Conventional Commits](https://conventionalcommits.org/)
 - Mantenha cobertura de testes em 100%
-- Execute `bun run ci:lint` antes de commitar
+- Execute `npm run ci:lint` antes de commitar
 - Adicione testes para novas funcionalidades
 
 ### Processo
@@ -199,4 +192,4 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Desenvolvido com ❤️ usando [Bun](https://bun.sh) e [GitHub Actions](https://github.com/features/actions)**
+**Desenvolvido com ❤️ usando Node.js e [GitHub Actions](https://github.com/features/actions)**

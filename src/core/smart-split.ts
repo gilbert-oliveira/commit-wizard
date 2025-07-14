@@ -1,7 +1,7 @@
-import type { Config } from '../config/index.ts';
-import type { CLIArgs } from '../utils/args.ts';
-import { getCachedAnalysis, setCachedAnalysis } from './cache.ts';
-import { showCommitResult } from '../ui/index.ts';
+import type { Config } from '../config/index';
+import type { CLIArgs } from '../utils/args';
+import { getCachedAnalysis, setCachedAnalysis } from './cache';
+import { showCommitResult } from '../ui/index';
 import { log } from '@clack/prompts';
 
 export interface FileGroup {
@@ -251,7 +251,7 @@ export async function analyzeFileContext(
  * Gera diff para um grupo de arquivos (otimizado para tokens)
  */
 export async function generateGroupDiff(group: FileGroup): Promise<string> {
-  const { getFileDiff } = await import('../git/index.ts');
+  const { getFileDiff } = await import('../git/index');
 
   const diffs = group.files
     .map((file) => {
@@ -429,7 +429,7 @@ export async function handleSmartSplitMode(
 
   // Mostrar interface de Smart Split para o usuário decidir
   if (!args.yes && !args.silent) {
-    const { showSmartSplitGroups } = await import('../ui/smart-split.ts');
+    const { showSmartSplitGroups } = await import('../ui/smart-split');
     const userAction = await showSmartSplitGroups(analysis.groups);
 
     if (userAction.action === 'cancel') {
@@ -442,7 +442,7 @@ export async function handleSmartSplitMode(
     if (userAction.action === 'manual') {
       // Delegar para modo manual - re-executar com flag split
       const newArgs = { ...args, split: true, smartSplit: false };
-      const { main } = await import('./index.ts');
+      const { main } = await import('./index');
       await main(newArgs);
       return;
     }
@@ -486,7 +486,7 @@ export async function handleSmartSplitMode(
       log.info(`🤖 Gerando commit para: ${group.name}`);
     }
 
-    const { generateWithRetry } = await import('./openai.ts');
+    const { generateWithRetry } = await import('./openai');
     const result = await generateWithRetry(groupDiff, config, group.files);
 
     if (!result.success) {
@@ -518,7 +518,7 @@ export async function handleSmartSplitMode(
     // Interface do usuário
     if (args.yes) {
       // Modo automático
-      const { executeFileCommit } = await import('../git/index.ts');
+      const { executeFileCommit } = await import('../git/index');
       let commitResult;
 
       // Fazer commit apenas dos arquivos do grupo atual
@@ -531,7 +531,7 @@ export async function handleSmartSplitMode(
         // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
         const { execSync } = await import('child_process');
         // Importar função de escape do módulo git
-        const { escapeShellArg } = await import('../git/index.ts');
+        const { escapeShellArg } = await import('../git/index');
         try {
           // Fazer commit apenas dos arquivos do grupo
           const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -576,13 +576,13 @@ export async function handleSmartSplitMode(
         editCommitMessage,
         copyToClipboard,
         showCancellation,
-      } = await import('../ui/index.ts');
+      } = await import('../ui/index');
 
       const uiAction = await showCommitPreview(result.suggestion);
 
       switch (uiAction.action) {
         case 'commit': {
-          const { executeFileCommit } = await import('../git/index.ts');
+          const { executeFileCommit } = await import('../git/index');
           let commitResult;
 
           // Fazer commit apenas dos arquivos do grupo atual
@@ -594,7 +594,7 @@ export async function handleSmartSplitMode(
             // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
             const { execSync } = await import('child_process');
             // Importar função de escape do módulo git
-            const { escapeShellArg } = await import('../git/index.ts');
+            const { escapeShellArg } = await import('../git/index');
             try {
               // Fazer commit apenas dos arquivos do grupo
               const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -633,7 +633,7 @@ export async function handleSmartSplitMode(
         case 'edit': {
           const editAction = await editCommitMessage(result.suggestion.message);
           if (editAction.action === 'commit' && editAction.message) {
-            const { executeFileCommit } = await import('../git/index.ts');
+            const { executeFileCommit } = await import('../git/index');
             let editCommitResult;
 
             // Fazer commit apenas dos arquivos do grupo atual
@@ -646,7 +646,7 @@ export async function handleSmartSplitMode(
               // Para múltiplos arquivos, usar commit normal mas com apenas os arquivos do grupo
               const { execSync } = await import('child_process');
               // Importar função de escape do módulo git
-              const { escapeShellArg } = await import('../git/index.ts');
+              const { escapeShellArg } = await import('../git/index');
               try {
                 // Fazer commit apenas dos arquivos do grupo
                 const filesArg = group.files.map((f) => escapeShellArg(f)).join(' ');
@@ -703,7 +703,7 @@ export async function handleSmartSplitMode(
 
     // Perguntar se quer continuar (exceto em modo automático)
     if (i < analysis.groups.length - 1 && !args.yes) {
-      const { askContinueCommits } = await import('../ui/index.ts');
+      const { askContinueCommits } = await import('../ui/index');
       const remainingGroups = analysis.groups
         .slice(i + 1)
         .filter((g) => g !== undefined)

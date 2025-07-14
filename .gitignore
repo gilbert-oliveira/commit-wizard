@@ -12,10 +12,6 @@ build/
 *.tgz
 *.tar.gz
 
-# Bun specific
-.bun/
-bun.lockb
-
 # Environment variables
 .env
 .env.local
@@ -148,3 +144,6 @@ temp/
 
 # Docs AI
 docs_ai/
+
+# dist
+dist/

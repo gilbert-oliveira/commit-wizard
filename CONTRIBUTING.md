@@ -7,7 +7,6 @@ Obrigado por considerar contribuir para o commit-wizard! 🎉
 ### Pré-requisitos
 
 - Node.js 18+
-- Bun 1.0.0+
 - Git
 - Conhecimento básico de TypeScript
 
@@ -27,18 +26,18 @@ Obrigado por considerar contribuir para o commit-wizard! 🎉
 2. **Instale dependências**
 
    ```bash
-   bun install
+   npm install
    ```
 
 3. **Execute testes**
 
    ```bash
-   bun test
+   npm run test
    ```
 
 4. **Execute em modo desenvolvimento**
    ```bash
-   bun run dev
+   npm run dev
    ```
 
 ## 🔄 Fluxo de Trabalho
@@ -77,19 +76,19 @@ git checkout -b docs/atualizacao-documentacao
 
 ```bash
 # Execute todos os testes
-bun test
+npm run test
 
 # Execute testes específicos
-bun test tests/unit.test.ts
+node --test tests/unit.test.ts
 
 # Verifique formatação
-bun run format
+npx prettier --write .
 
 # Verifique tipos
-bun run type-check
+npx tsc --noEmit
 
 # Execute linting
-bun run ci:lint
+npx eslint .
 ```
 
 ### 5. Commit e Push
@@ -205,17 +204,17 @@ git commit -m "wip"
 
 ```bash
 # Todos os testes
-bun test
+npm run test
 
 # Testes específicos
-bun test tests/unit.test.ts
-bun test tests/integration.test.ts
+node --test tests/unit.test.ts
+node --test tests/integration.test.ts
 
 # Com cobertura
-bun test --coverage
+# (ajustar comando de cobertura para Node.js se necessário)
 
 # Em modo watch
-bun test --watch
+# (modo watch pode ser implementado com ferramentas Node.js)
 ```
 
 ### Escrevendo Testes
@@ -283,21 +282,21 @@ export async function generateCommitMessage(
 
 ```bash
 # Desenvolvimento
-bun run dev          # Executar em modo dev
-bun run build        # Build do projeto
-bun run test         # Executar testes
-bun run format       # Formatar código
+npm run dev          # Executar em modo dev
+npm run build        # Build do projeto
+npm run test         # Executar testes
+npm run format       # Formatar código
 
 # CI/CD Local
-bun run ci:test      # Testes com verbose
-bun run ci:build     # Build para CI
-bun run ci:lint      # Linting
-bun run ci:security  # Auditoria de segurança
+npm run ci:test      # Testes com verbose
+npm run ci:build     # Build para CI
+npm run ci:lint      # Linting
+npm run ci:security  # Auditoria de segurança
 
 # Release
-bun run release:patch # Release patch
-bun run release:minor # Release minor
-bun run release:major # Release major
+npm run release:patch # Release patch
+npm run release:minor # Release minor
+npm run release:major # Release major
 ```
 
 ## 🚨 Troubleshooting
@@ -308,18 +307,18 @@ bun run release:major # Release major
 
 ```bash
 # Limpar cache
-rm -rf node_modules .bun
-bun install
+rm -rf node_modules
+npm install
 
 # Verificar TypeScript
-bun run tsc --noEmit
+npm run tsc --noEmit
 ```
 
 **Testes falham:**
 
 ```bash
 # Executar testes específicos
-bun test tests/unit.test.ts
+node --test tests/unit.test.ts
 
 # Verificar configuração
 cat .commit-wizardrc
@@ -329,10 +328,10 @@ cat .commit-wizardrc
 
 ```bash
 # Formatar código
-bun run format
+npm run format
 
 # Verificar tipos
-bun run type-check
+npm run type-check
 ```
 
 ## 🤝 Review Process

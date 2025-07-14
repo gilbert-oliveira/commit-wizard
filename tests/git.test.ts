@@ -1,7 +1,6 @@
 // Importar polyfill antes de qualquer outra coisa
-import '../src/utils/polyfill';
 
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 
 describe('Git Functions - Escape de Caracteres Especiais', () => {
   describe('Função escapeShellArg', () => {

@@ -9,7 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/@gilbert_oliveira/commit-wizard.svg)](https://www.npmjs.com/package/@gilbert_oliveira/commit-wizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
+Um CLI desenvolvido para Node.js que analisa suas mudanças no Git e gera mensagens de commit personalizadas usando a API da OpenAI.
 
 ## 📊 Status do Projeto
 
@@ -60,13 +60,13 @@ Um CLI desenvolvido com Bun.js que analisa suas mudanças no Git e gera mensagen
 
 ### Pré-requisitos
 
-- [Bun](https://bun.sh/) instalado
+- Node.js 18+ instalado
 - Chave da API OpenAI
 
 ### Instalação Global
 
 ```bash
-bun install -g @gilbert_oliveira/commit-wizard
+npm install -g @gilbert_oliveira/commit-wizard
 ```
 
 ### Uso via npx (sem instalação)
@@ -358,9 +358,7 @@ commit-wizard --split
 ### Executar Testes
 
 ```bash
-bun test                    # Todos os testes
-bun test src/__tests__      # Testes unitários
-bun test tests/             # Testes de integração
+npm run test           # Todos os testes
 ```
 
 ### Desenvolvimento Local
@@ -368,14 +366,15 @@ bun test tests/             # Testes de integração
 ```bash
 git clone https://github.com/gilbert-oliveira/commit-wizard
 cd commit-wizard
-bun install
-bun run dev
+
+npm install
+npm run dev
 ```
 
 ### Build
 
 ```bash
-bun run build
+npm run build
 ```
 
 ---
@@ -437,7 +436,7 @@ MIT © [Gilbert Oliveira](https://github.com/gilbert-oliveira)
 
 - [Documentação da OpenAI](https://platform.openai.com/docs)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [Bun.js](https://bun.sh/)
+- [Node.js](https://nodejs.org/) (alternativa)
 - [📋 Guia para Contribuidores](.github/README.md) - Informações sobre desenvolvimento e CI/CD
 
 ---

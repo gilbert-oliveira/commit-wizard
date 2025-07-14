@@ -21,7 +21,7 @@ warn() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-error() {
+erro() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
@@ -31,19 +31,19 @@ info() {
 
 # Verificar se estamos no branch main
 if [ "$(git branch --show-current)" != "main" ]; then
-    error "Você deve estar no branch main para fazer release"
+    erro "Você deve estar no branch main para fazer release"
     exit 1
 fi
 
 # Verificar se há mudanças não commitadas
 if [ -n "$(git status --porcelain)" ]; then
-    error "Há mudanças não commitadas. Faça commit ou stash antes de continuar."
+    erro "Há mudanças não commitadas. Faça commit ou stash antes de continuar."
     exit 1
 fi
 
 # Verificar se há mudanças significativas no pacote
 log "Verificando mudanças no pacote..."
-if ! bun run check-changes; then
+if ! npm run check-changes; then
     warn "Nenhuma mudança significativa detectada no pacote."
     read -p "Deseja continuar mesmo assim? (y/N): " -n 1 -r
     echo
@@ -55,7 +55,7 @@ fi
 
 # Verificar se o argumento foi fornecido
 if [ $# -eq 0 ]; then
-    error "Uso: $0 [patch|minor|major]"
+    erro "Uso: $0 [patch|minor|major]"
     echo "  patch: 1.0.0 -> 1.0.1 (correções)"
     echo "  minor: 1.0.0 -> 1.1.0 (novas funcionalidades)"
     echo "  major: 1.0.0 -> 2.0.0 (breaking changes)"
@@ -66,7 +66,7 @@ RELEASE_TYPE=$1
 
 # Validar tipo de release
 if [[ ! "$RELEASE_TYPE" =~ ^(patch|minor|major)$ ]]; then
-    error "Tipo de release inválido: $RELEASE_TYPE"
+    erro "Tipo de release inválido: $RELEASE_TYPE"
     echo "Tipos válidos: patch, minor, major"
     exit 1
 fi
@@ -75,16 +75,16 @@ log "Iniciando release $RELEASE_TYPE..."
 
 # Instalar dependências e executar testes
 log "Executando testes..."
-bun install
-bun test
+npm install
+npm run test
 
 # Build do projeto
 log "Fazendo build..."
-bun run build
+npm run build
 
 # Verificar se o build foi bem-sucedido
 if [ ! -f "dist/commit-wizard.js" ]; then
-    error "Build falhou. Verifique os erros acima."
+    erro "Build falhou. Verifique os erros acima."
     exit 1
 fi
 
@@ -144,21 +144,4 @@ if command -v gh &> /dev/null; then
         --prerelease=false
     
     log "Release criada no GitHub!"
-else
-    warn "GitHub CLI não encontrado. Crie o release manualmente em:"
-    echo "https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\([^/]*\/[^/]*\)\.git/\1/')/releases/new"
-fi
-
-# Instruções finais
-log "Release $NEW_VERSION concluída!"
-echo ""
-info "Próximos passos:"
-echo "1. Aguarde o CI/CD executar os testes"
-echo "2. Verifique se a publicação no NPM foi bem-sucedida"
-echo "3. Teste a instalação: npm install -g commit-wizard@$NEW_VERSION"
-echo ""
-info "Para fazer rollback se necessário:"
-echo "git tag -d v$NEW_VERSION"
-echo "git push origin :refs/tags/v$NEW_VERSION"
-echo "git reset --hard HEAD~1"
-echo "git push origin main --force" 
+fi 

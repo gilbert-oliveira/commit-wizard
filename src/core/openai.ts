@@ -1,4 +1,4 @@
-import type { Config } from '../config/index.ts';
+import type { Config } from '../config/index';
 
 export interface CommitSuggestion {
   message: string;

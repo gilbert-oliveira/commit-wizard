@@ -1,13 +1,13 @@
 import { log } from '@clack/prompts';
-import { loadConfig, validateConfig } from '../config/index.ts';
+import { loadConfig, validateConfig } from '../config/index';
 import {
   isGitRepository,
   getGitStatus,
   getDiffStats,
   executeCommit,
   executeFileCommit,
-} from '../git/index.ts';
-import { generateWithRetry } from './openai.ts';
+} from '../git/index';
+import { generateWithRetry } from './openai';
 import {
   showCommitPreview,
   editCommitMessage,
@@ -16,12 +16,12 @@ import {
   showCancellation,
   selectFilesForCommit,
   askContinueCommits,
-} from '../ui/index.ts';
-import { chooseSplitMode } from '../ui/smart-split.ts';
-import { handleSmartSplitMode } from './smart-split.ts';
-import { initializeCache } from './cache.ts';
-import type { CLIArgs } from '../utils/args.ts';
-import type { Config } from '../config/index.ts';
+} from '../ui/index';
+import { chooseSplitMode } from '../ui/smart-split';
+import { handleSmartSplitMode } from './smart-split';
+import { initializeCache } from './cache';
+import type { CLIArgs } from '../utils/args';
+import type { Config } from '../config/index';
 
 export async function main(
   args: CLIArgs = {
@@ -248,7 +248,7 @@ async function handleSplitMode(gitStatus: any, config: any, args: CLIArgs) {
     }
 
     // Gerar diff apenas dos arquivos selecionados
-    const { getFileDiff } = await import('../git/index.ts');
+    const { getFileDiff } = await import('../git/index');
     const fileDiffs = selectedFiles
       .filter((file): file is string => file !== undefined)
       .map((file) => {
