@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.11.0
+
+### Minor Changes
+
+- e51160b: Atualizar documentações
+
 ## 2.10.0
 
 ### Minor Changes
