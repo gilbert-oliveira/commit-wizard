@@ -46,7 +46,5 @@ async function run() {
   }
 }
 
-// Verificar se o arquivo está sendo executado diretamente
-if (import.meta.url === `file://${process.argv[1]}`) {
-  run();
-} 
+// Executar sempre que o script for chamado
+run();
