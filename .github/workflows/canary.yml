@@ -49,6 +49,17 @@ jobs:
       - name: Bump canary version
         run: npx changeset version
 
+      - name: Adicionar hash do commit na versão canary
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          # Só altera se for canary
+          if [[ "$PKG_VERSION" == *canary* ]]; then
+            NEW_VERSION=$(echo $PKG_VERSION | sed "s/\(canary\)\(\.[0-9]*\)\?$/canary.$HASH/")
+            node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '$NEW_VERSION'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+            echo "Versão canary ajustada para: $NEW_VERSION"
+          fi
+
       - name: Commit canary version bump
         if: github.event_name == 'push'
         run: |
@@ -75,13 +86,31 @@ jobs:
 
       - name: Publish canary to npm
         if: steps.canary_exists.outputs.publish == 'true'
-        run: npm publish --tag canary --access public
+        run: |
+          npm publish --tag canary --access public || {
+            if grep -q "previously published versions" /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null; then
+              echo "Versão já publicada por outro workflow. Ignorando erro.";
+              exit 0;
+            else
+              echo "Erro inesperado ao publicar.";
+              exit 1;
+            fi
+          }
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish canary to GitHub Packages
         if: steps.canary_exists.outputs.publish == 'true'
-        run: npm publish --tag canary --registry=https://npm.pkg.github.com
+        run: |
+          npm publish --tag canary --registry=https://npm.pkg.github.com || {
+            if grep -q "previously published versions" /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null; then
+              echo "Versão já publicada por outro workflow (GitHub Packages). Ignorando erro.";
+              exit 0;
+            else
+              echo "Erro inesperado ao publicar no GitHub Packages.";
+              exit 1;
+            fi
+          }
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
