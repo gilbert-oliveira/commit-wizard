@@ -1,11 +1,17 @@
 // Importar polyfill antes de qualquer outra coisa
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   analyzeFileContext,
   generateGroupDiff,
 } from '../src/core/smart-split';
 import type { Config } from '../src/config/index';
+
+// Mock para clipboardy (evita erro ESM no Jest)
+jest.mock('clipboardy', () => ({
+  __esModule: true,
+  default: { write: jest.fn(), read: jest.fn() },
+}));
 
 describe('Smart Split', () => {
   beforeEach(() => {
