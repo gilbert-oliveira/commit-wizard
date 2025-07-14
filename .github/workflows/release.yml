@@ -13,6 +13,12 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
+      - name: Cancelar se não for main/master
+        if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+        run: |
+          echo "Release só pode rodar em main/master"
+          exit 0
+
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
