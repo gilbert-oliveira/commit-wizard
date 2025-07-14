@@ -1,0 +1,17 @@
+{
+  "openai": {
+    "model": "gpt-4o",
+    "maxTokens": 150,
+    "temperature": 0.7
+  },
+  "language": "pt",
+  "commitStyle": "conventional",
+  "autoCommit": false,
+  "splitCommits": false,
+  "dryRun": false,
+  "prompt": {
+    "includeFileNames": true,
+    "includeDiffStats": true,
+    "customInstructions": ""
+  }
+} 
