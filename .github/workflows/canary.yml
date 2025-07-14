@@ -45,9 +45,7 @@ jobs:
       - name: Bump versão canary
         run: npx changeset version
 
-      - name: Hash do commit
-        id: hash
-        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      # Removido step de hash/manual version
 
       - name: Verificar canary
         run: |
@@ -104,11 +102,10 @@ jobs:
         with:
           script: |
             const pkg = require('./package.json');
-            const version = pkg.version.split('+')[0];
-            const hash = process.env.HASH || '';
+            const version = pkg.version;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}${hash ? `+${hash}` : ''}\`\n\nObs: O pacote canary é publicado apenas no npmjs. O sufixo '+hash' não é aceito pelo npmjs, então a versão publicada será sempre no formato x.y.z-canary.n.`
+              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}\`\n\nObs: O pacote canary é publicado apenas no npmjs. Cada push gera uma versão incremental (canary.X).`
             }); 
