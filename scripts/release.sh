@@ -76,11 +76,11 @@ log "Iniciando release $RELEASE_TYPE..."
 # Instalar dependências e executar testes
 log "Executando testes..."
 npm install
-npm run test:node
+npm run test
 
 # Build do projeto
 log "Fazendo build..."
-npm run build:node
+npm run build
 
 # Verificar se o build foi bem-sucedido
 if [ ! -f "dist/commit-wizard.js" ]; then
