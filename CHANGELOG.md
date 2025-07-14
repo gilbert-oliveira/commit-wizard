@@ -1,5 +1,11 @@
 # @gilbert_oliveira/commit-wizard
 
+## 2.4.0-canary.3
+
+### Patch Changes
+
+- Ajuste de concorrencia ao publicar pacote canary
+
 ## 2.4.0-canary.2
 
 ### Patch Changes
