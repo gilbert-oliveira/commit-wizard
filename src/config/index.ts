@@ -1,10 +1,9 @@
 import { existsSync, readFileSync } from 'fs';
 import fs from 'fs';
 import { join } from 'path';
-import dotenv from 'dotenv';
+// Removido: import dotenv from 'dotenv';
 
-// Carregar variáveis de ambiente
-dotenv.config();
+// Removido: dotenv.config();
 
 export interface Config {
   openai: {

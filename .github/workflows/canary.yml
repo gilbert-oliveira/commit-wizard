@@ -1,0 +1,134 @@
+name: Canary Release
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  canary:
+    name: Canary Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Instalar deps
+        run: npm ci
+
+      - name: Testes
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Pre mode canary
+        run: |
+          if [ ! -f .changeset/pre.json ]; then
+            npx changeset pre enter canary
+          else
+            echo "Já está em pre mode, pulando changeset pre enter"
+          fi
+
+      - name: Criar changeset dummy para canary
+        run: |
+          cat <<EOF > .changeset/canary-bump-$(date +%s).md
+          ---
+          "@gilbert_oliveira/commit-wizard": patch
+          ---
+
+          Canary bump.
+          EOF
+
+      - name: Bump versão canary
+        run: npx changeset version
+
+      - name: Forçar incremento do canary
+        run: |
+          PKG_FILE=package.json
+          VERSION=$(jq -r .version $PKG_FILE)
+          if [[ "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+-canary\.)([0-9]+)$ ]]; then
+            BASE="${BASH_REMATCH[1]}"
+            NUM="${BASH_REMATCH[2]}"
+            NEW_NUM=$((NUM+1))
+            NEW_VERSION="${BASE}${NEW_NUM}"
+            jq ".version = \"$NEW_VERSION\"" $PKG_FILE > tmp.$$.json && mv tmp.$$.json $PKG_FILE
+            echo "Versão canary forçada para: $NEW_VERSION"
+          fi
+
+      # Removido step de hash/manual version
+
+      - name: Verificar canary
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [[ "$PKG_VERSION" != *canary* ]]; then
+            echo "A versão $PKG_VERSION não é canary. Cancelando publicação."
+            exit 0
+          fi
+
+      - name: Checar versão npm
+        id: canary_exists
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version" | cut -d'+' -f1)
+          EXISTE=$(npm view "$PKG_NAME@$PKG_VERSION" version || echo "")
+          if [ "$EXISTE" = "$PKG_VERSION" ]; then
+            echo "A versão $PKG_VERSION já existe no npm. Pulando publicação."
+            echo "publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Versão $PKG_VERSION ainda não publicada."
+            echo "publish=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publicar npm
+        if: steps.canary_exists.outputs.publish == 'true'
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version" | cut -d'+' -f1)
+          echo "Publicando versão: $PKG_VERSION"
+          tentativas=0
+          max=3
+          until [ $tentativas -ge $max ]
+          do
+            npm publish --tag canary --access public && break
+            tentativas=$((tentativas+1))
+            echo "Tentativa $tentativas falhou. Aguardando para tentar novamente..."
+            sleep 5
+          done
+          if [ $tentativas -eq $max ]; then
+            echo "Erro inesperado ao publicar após $max tentativas."
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Removido o passo de publicação no GitHub Packages pois não é necessário
+
+      - name: Sair pre mode
+        if: always()
+        run: npx changeset pre exit
+
+      - name: Comentar PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pkg = require('./package.json');
+            const version = pkg.version;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Canary publicado no npm:\n- **npm:** \`npm install ${pkg.name}@${version}\`\n> Versão: \`${version}\`\n\nObs: O pacote canary é publicado apenas no npmjs. Cada push gera uma versão incremental (canary.X).`
+            }); 
