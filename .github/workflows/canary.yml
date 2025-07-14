@@ -42,6 +42,16 @@ jobs:
             echo "Já está em pre mode, pulando changeset pre enter"
           fi
 
+      - name: Criar changeset dummy para canary
+        run: |
+          cat <<EOF > .changeset/canary-bump-$(date +%s).md
+          ---
+          "@gilbert_oliveira/commit-wizard": patch
+          ---
+
+          Canary bump.
+          EOF
+
       - name: Bump versão canary
         run: npx changeset version
 
