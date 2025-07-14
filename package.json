@@ -12,7 +12,7 @@
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "commit-wizard": "./dist/commit-wizard.js"
+    "commit-wizard": "dist/commit-wizard.js"
   },
   "scripts": {
     "dev": "npm run build && node dist/commit-wizard.js",
