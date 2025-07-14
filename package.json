@@ -29,15 +29,15 @@
     "ci:test": "vitest run",
     "ci:build": "npm run build",
     "changeset": "changeset",
+    "changeset:create": "node scripts/create-changeset.js",
     "version": "changeset version",
     "release": "changeset publish",
     "release:github": "npm run build && npm publish --registry=https://npm.pkg.github.com",
-    "canary": "npm run build && npm publish --tag canary",
-    "canary:github": "npm run build && npm publish --registry=https://npm.pkg.github.com --tag canary",
-    "changeset:create": "node scripts/create-changeset.js",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
+    "canary": "npm run build && npm publish --tag canary",
+    "canary:github": "npm run build && npm publish --registry=https://npm.pkg.github.com --tag canary",
     "check-changes": "node -e \"const { execSync } = require('child_process'); const changed = execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).includes('package.json') || execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf8' }).match(/(src|bin|scripts|dist)/\\.*/); console.log(changed ? '🚀 Mudanças detectadas - deploy recomendado!' : '⚠️ Nenhuma mudança significativa detectada'); process.exit(changed ? 0 : 1);\""
   },
   "keywords": [
